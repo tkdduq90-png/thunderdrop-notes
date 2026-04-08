@@ -24,12 +24,14 @@
 - BPM: 150~175 / 색상: 보라+레드
 - 고정태그: cowbell hits, chopped vocal chops, mega bass boosted, subwoofer shaking, extended mix, 3 minutes, do not fade early
 - 토큰: youtube_token_yacha.pickle
+- 오디오 경로: YACHA/audio
 
 ### 3CROW
 - ID: UC9bWppwPvgtC7sjsgIOMcHQ / 니치: Drive × Techno × 삼족오 세계관
 - BPM: 130~150 / 색상: 청록
 - 고정태그: mega bass boosted, occasional vocals, vocal stabs on drops, subwoofer shaking, extended mix, 3 minutes, do not fade early
 - 토큰: 3Crow\youtube_token_3crow.pickle
+- 오디오 경로: 3Crow/audio
 
 ### 공용
 - Sheets: music-220@thunderdrop.iam.gserviceaccount.com
@@ -42,6 +44,16 @@
 - Leonardo AI 썸네일 A/B/C / YouTube API 업로드 (매일 21시)
 - Analytics 수집 → Sheets / Studio 크롤링 / AB테스트 / dashboard.html
 - Task Scheduler (analytics 10시, git push 23시)
+
+### 최근 완료 ✅
+- suno_bot.py base_dir 채널별 분리 (YACHA/audio, 3Crow/audio)
+- YACHA_DIR 경로 야차→YACHA 통일
+- dev 브랜치 복구: neon/shorts/B-C variants + mood word 컨텍스트 YACHA/3CROW 분리
+- claude_api() temperature 파라미터 복구
+- studio_ab_tester.py 프로필 경로 채널 내부로 통일
+- 폴더 구조화: scripts/(독립 유틸), logs/(로그/스크린샷), temp/, seo_cache/
+- 루트 잡동사니 정리 (야차 병합, chrome_profile 정리)
+- CLAUDE.md 업데이트 (브랜치/커밋/폴더구조/채널 정보)
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -85,6 +97,7 @@
 - 스크립트: scripts/update_obsidian.py
 - 컨텍스트 유지: 새 대화 시작시 GitHub raw URL 읽기 → 대화 중 메모 → 마무리시 push
 - 역할 분리: 마스터 스트래티지(HTML)=전략/큰 그림, 옵시디언 노트=실무 현황+기술 결정+컨텍스트
+- 상태: 세팅 진행 중
 
 ## 🚀 SaaS
 - USP: 변수→성과 연결 데이터 기반 자동화 루프
