@@ -58,12 +58,13 @@
 - **2026-04-09:** thumbnail_builder.py scene prompt KeyError 수정, 3CROW B variant is_b=True 버그 수정
 - **2026-04-09:** beat_video.py EQ 16:9=200px/Shorts=300px, gblur sigma 축소, 피드백 루프 제거, 렌더링 진행률 출력 추가
 - **2026-04-09:** master_pipeline.py Shorts RMS 상위3개/ABC variant 재작업, PCM 파일명 충돌 수정, stdout flush 추가
-- **2026-04-09:** 로그파일 저장(logs/날짜_채널.log) + upload_history.csv 추가. 체크포인트 재시작 기능 추가(mode 1 전용, logs/checkpoint_채널.json). 클로드 코드 자율 실행 프롬프트 설계 완료 (mode 2 기준, 에러 자동 수정 + fix_log.txt 기록)
+- **2026-04-09:** 로그파일 저장(logs/날짜_채널.log) + upload_history.csv 추가. 체크포인트 재시작 기능 추가(mode 1 전용). 클로드 코드 자율 실행 프롬프트 설계 완료 — mode 1 전체 자율실행(에러 자동 수정 + fix_log.txt 기록). 화면 잠금 해제 필수.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
 - 포스트 프로세싱 (ambient 레이어링)
 - 댓글 자동화
+- **예정:** --test 플래그+로그저장+체크포인트 재시작 작업
 
 ### 기술 결정
 - Docker suno-api: hCaptcha 서버사이드 감지 → 완전 포기, pyautogui 유일
@@ -71,8 +72,6 @@
 - ChromeDriver: 146.0.7680.178 하드코딩
 - SONGS_PER_MIX: 20 / 날짜폴더: 2026-04-07_1, _2, _3
 - **브랜치 전략:** master 단일 운영 (dev 브랜치 폐기)
-- **로그 시스템:** logs/날짜_채널.log + upload_history.csv + checkpoint_채널.json (mode 1 전용)
-- **에러 처리:** 클로드 자율 실행 (mode 2) + fix_log.txt 기록
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -116,6 +115,7 @@
 - [ ] 3CROW 썸네일 3CROW 텍스트 제거
 ### P1
 - [ ] 포스트 프로세싱 / AI Disclosure / SEO 스크래퍼 실전적용
+- [ ] --test 플래그+로그저장+체크포인트 재시작 작업
 ### P2
 - [ ] 프롬프트×성과 매핑 / 가중치 반영(70/30) / Fast Exit
 ### P3
