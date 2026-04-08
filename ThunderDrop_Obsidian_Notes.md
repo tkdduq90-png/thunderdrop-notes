@@ -59,6 +59,7 @@
 - **2026-04-09:** beat_video.py EQ 16:9=200px/Shorts=300px, gblur sigma 축소, 피드백 루프 제거, 렌더링 진행률 출력 추가
 - **2026-04-09:** master_pipeline.py Shorts RMS 상위3개/ABC variant 재작업, PCM 파일명 충돌 수정, stdout flush 추가
 - **2026-04-09:** 로그파일 저장(logs/날짜_채널.log) + upload_history.csv 추가. 체크포인트 재시작 기능 추가(mode 1 전용). 클로드 코드 자율 실행 프롬프트 설계 완료 — mode 1 전체 자율실행(에러 자동 수정 + fix_log.txt 기록). 화면 잠금 해제 필수.
+- **2026-04-09:** analytics_collector/studio_ab_tester 경로 버그 수정. studio_ab_tester cp949 인코딩 수정. AB테스트 thumb_C 누락 + title_B/C 미기록 버그 수정. Sheets Analytics_Manual 정리 - 144행→75행, 중복 69건 삭제, ab_registered 실제 등록 2건만 유지. 자율실행 프롬프트 완성 (claude --dangerously-skip-permissions + mode1, settings.json 불필요).
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
