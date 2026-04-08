@@ -1,5 +1,5 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-08*
+*최종 업데이트: 2026-04-09*
 
 ## 🎯 프로젝트 정체성
 **One-liner:** 데이터 → 분석 → 자동 반영 → 업로드 → 반복 (무한 루프)
@@ -54,17 +54,23 @@
 - 폴더 구조화: scripts/(독립 유틸), logs/(로그/스크린샷), temp/, seo_cache/
 - 루트 잡동사니 정리 (야차 병합, chrome_profile 정리)
 - CLAUDE.md 업데이트 (브랜치/커밋/폴더구조/채널 정보)
+- **2026-04-09:** dev 브랜치 폐기, master 단일 운영 확정
+- **2026-04-09:** thumbnail_builder.py scene prompt KeyError 수정, 3CROW B variant is_b=True 버그 수정
+- **2026-04-09:** beat_video.py EQ 16:9=200px/Shorts=300px, gblur sigma 축소, 피드백 루프 제거, 렌더링 진행률 출력 추가
+- **2026-04-09:** master_pipeline.py Shorts RMS 상위3개/ABC variant 재작업, PCM 파일명 충돌 수정, stdout flush 추가
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
 - 포스트 프로세싱 (ambient 레이어링)
 - 댓글 자동화
+- **예정:** --test 플래그+로그저장+체크포인트 재시작 작업
 
 ### 기술 결정
 - Docker suno-api: hCaptcha 서버사이드 감지 → 완전 포기, pyautogui 유일
 - FFmpeg: -hwaccel cuda + h264_nvenc (zoompan은 CPU 전용)
 - ChromeDriver: 146.0.7680.178 하드코딩
 - SONGS_PER_MIX: 20 / 날짜폴더: 2026-04-07_1, _2, _3
+- **브랜치 전략:** master 단일 운영 (dev 브랜치 폐기)
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -108,6 +114,7 @@
 - [ ] 3CROW 썸네일 3CROW 텍스트 제거
 ### P1
 - [ ] 포스트 프로세싱 / AI Disclosure / SEO 스크래퍼 실전적용
+- [ ] --test 플래그+로그저장+체크포인트 재시작 작업
 ### P2
 - [ ] 프롬프트×성과 매핑 / 가중치 반영(70/30) / Fast Exit
 ### P3
