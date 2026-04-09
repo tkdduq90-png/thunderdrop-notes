@@ -44,6 +44,8 @@
 - Leonardo AI 썸네일 A/B/C / YouTube API 업로드 (매일 21시)
 - Analytics 수집 → Sheets / Studio 크롤링 / AB테스트 / dashboard.html
 - Task Scheduler (analytics 10시, git push 23시)
+- seo_scraper.py: generate_hook_title 추가 (Title B=감성훅/C=숫자자극, 경쟁채널 패턴 분석 기반)
+- master_pipeline.py: --dry-run 플래그 추가, 플리/단곡/숏츠 Title A/B/C 생성 연결 완료
 
 ### 최근 완료 ✅
 - suno_bot.py base_dir 채널별 분리 (YACHA/audio, 3Crow/audio)
@@ -83,9 +85,13 @@
 목적 > 장르 > 기타요소 (기타요소는 팬 고착 도구, 신규 유입 아님)
 
 ### 제목 ABC
-- A: {keyword} 2026 🔥 | MEGA BASS | {brand} (SEO)
-- B: 감성 캐치문구 + Gym Phonk Mix 2026
-- C: 숫자/행동 자극 + Gym Phonk Mix 2026
+- A: seo_generate_title (경쟁채널 키워드 분석 기반 SEO)
+- B: generate_hook_title type=B (감성/상황 훅 + fixed_keyword)
+- C: generate_hook_title type=C (숫자/행동 자극 훅 + fixed_keyword)
+- YACHA fixed_keyword: "Gym Phonk Mix 2026"
+- 3CROW fixed_keyword: "Night Drive Techno Mix 2026"
+- 플리/단곡: 영상 1개 업로드 + YouTube AB테스트 A/B/C 등록
+- 숏츠: 숏츠1=A, 숏츠2=B, 숏츠3=C 각각 업로드
 - 세계관은 썸네일+설명란 전용, 제목 금지
 
 ### 썸네일 ABC
@@ -120,8 +126,12 @@
 - [ ] 3CROW 썸네일 3CROW 텍스트 제거
 - [ ] AB테스트 0/10 실패 해결
 ### P1
-- [ ] 포스트 프로세싱 / AI Disclosure / SEO 스크래퍼 실전적용
+- [x] SEO 스크래퍼 실전적용 ✅ 완료
+- [ ] 포스트 프로세싱 / AI Disclosure
 - [ ] --test 플래그+로그저장+체크포인트 재시작 작업
+- [ ] 영상 설명 SEO 스크랩퍼 기반 자동생성
+- [ ] 해시태그 SEO 스크랩퍼 기반 자동생성
+- [ ] 채널 설명 SEO 스크랩퍼 기반 1회성 생성
 ### P2
 - [ ] 프롬프트×성과 매핑 / 가중치 반영(70/30) / Fast Exit
 ### P3

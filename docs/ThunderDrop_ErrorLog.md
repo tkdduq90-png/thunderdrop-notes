@@ -217,6 +217,16 @@
 
 ---
 
+## 2026-04-09 Hook 제목 생성 관련
+
+- [FIXED] YACHA 숏츠 Title B 생성 실패 → dry-run이 used_titles 소모하는 문제. dry_run=True 파라미터 추가로 해결
+- [FIXED] Title C에 감성훅 혼입 ("when 3am hits different") → B/C 프롬프트 분기 처리로 해결
+- [FIXED] 허위 통계 문구 생성 ("streamed 500k times") → DEFAULT_HOOK_BLACKLIST에 streamed/played/times 계열 추가
+- [FIXED] 경쟁채널 곡명 훅 혼입 ("murder in my mind vibes") → DEFAULT_HOOK_BLACKLIST 강화
+- [NOTE] used_titles.json 무한 누적 → 장기 이슈, 추후 30일 이상 항목 자동 정리 로직 필요
+
+---
+
 ## 🔍 현재 미해결 / 모니터링 중
 
 | ID | 증상 | 추정 원인 | 상태 |
