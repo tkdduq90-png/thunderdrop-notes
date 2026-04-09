@@ -65,12 +65,14 @@
 - **2026-04-09:** 자율주행 첫 성공 - run_test_auto.py 생성, suno_bot.py cp949 수정, 체크포인트 활용, 3시간 만에 YACHA 5개 비공개 업로드 완료. AB테스트 자율주행 성공 - thumb_c 없을때 thumb_b 폴백 + 버튼 대기 30초 수정, YACHA 2/2 등록. Sheets video_id 누락 영상 추가 (YACHA 7건, 3CROW 6건). 자율주행 프롬프트 확정 (mode1 전체 + AB테스트 포함 버전).
 - **2026-04-09:** AB테스트 4개 영상 전부 등록 완료 - DuT9l-v8fFQ(YACHA 플리), HRcpM2vxRk0(YACHA 단곡), j98jZbijN1A(3CROW 플리), Xe91nBNqjXs(3CROW 단곡) 모두 Sheets ab_registered=TRUE 처리
 - **2026-04-09:** Shorts 영상효과 beat_video.py 통합(is_shorts=True), color grading 제거, Shorts raw 이미지 사용. 3CROW B 썸네일 6종 확정(좌->우 주행+수평네온+6색). C 썸네일 6종 확정(정적 스포츠카+6색). drawbox 제거. dashboard thumb_B/C 컬럼 인덱스 수정(9->10, 10->11). 썸네일 경로 서브폴더 분기(playlist/single/shorts). AB테스트 0/10 실패 미해결.
+- **2026-04-09:** SEO 영상설명/해시태그 전체 적용. 썸네일 keyword_hints 주입. History 21컬럼 확장. analytics_collector 승자제목 자동 업데이트. TEST MODE Sheets skip. Shorts temp 폴더 충돌 수정. Analytics_Manual 정리(87→65행). 미완료: Shorts 실테스트, YouTube 설명 반영, History 기록 확인.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
 - 포스트 프로세싱 (ambient 레이어링)
 - 댓글 자동화
 - AB테스트 0/10 실패 해결
+- Shorts 실테스트, YouTube 설명 반영, History 기록 확인
 - **예정:** --test 플래그+로그저장+체크포인트 재시작 작업
 
 ### 기술 결정
@@ -125,6 +127,7 @@
 ### P0
 - [ ] 3CROW 썸네일 3CROW 텍스트 제거
 - [ ] AB테스트 0/10 실패 해결
+- [ ] Shorts 실테스트, YouTube 설명 반영, History 기록 확인
 ### P1
 - [x] SEO 스크래퍼 실전적용 ✅ 완료
 - [ ] 포스트 프로세싱 / AI Disclosure
@@ -140,7 +143,4 @@
 ## 🔧 커맨드
 cd C:\ThunderDrop && python master_pipeline.py
 python scripts/analytics_collector.py --channel yacha --days 7
-python scripts/studio_ab_tester.py --channel yacha --register
-python scripts/generate_dashboard.py
-python scripts/update_obsidian.py --delta "변경사항"
-git add -A && git commit -m "feat: ..." && git push origin master
+python scripts/studio_ab_tester.py --channel yacha
