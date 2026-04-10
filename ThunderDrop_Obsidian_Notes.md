@@ -1,5 +1,5 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-09*
+*최종 업데이트: 2026-04-10*
 
 ## 🎯 프로젝트 정체성
 **One-liner:** 데이터 → 분석 → 자동 반영 → 업로드 → 반복 (무한 루프)
@@ -66,6 +66,9 @@
 - **2026-04-09:** AB테스트 4개 영상 전부 등록 완료 - DuT9l-v8fFQ(YACHA 플리), HRcpM2vxRk0(YACHA 단곡), j98jZbijN1A(3CROW 플리), Xe91nBNqjXs(3CROW 단곡) 모두 Sheets ab_registered=TRUE 처리
 - **2026-04-09:** Shorts 영상효과 beat_video.py 통합(is_shorts=True), color grading 제거, Shorts raw 이미지 사용. 3CROW B 썸네일 6종 확정(좌->우 주행+수평네온+6색). C 썸네일 6종 확정(정적 스포츠카+6색). drawbox 제거. dashboard thumb_B/C 컬럼 인덱스 수정(9->10, 10->11). 썸네일 경로 서브폴더 분기(playlist/single/shorts). AB테스트 0/10 실패 미해결.
 - **2026-04-09:** SEO 영상설명/해시태그 전체 적용. 썸네일 keyword_hints 주입. History 21컬럼 확장. analytics_collector 승자제목 자동 업데이트. TEST MODE Sheets skip. Shorts temp 폴더 충돌 수정. Analytics_Manual 정리(87→65행). 미완료: Shorts 실테스트, YouTube 설명 반영, History 기록 확인.
+- **2026-04-10:** thumbnails().set() sleep 5초 + 3회 retry 추가 (_upload_one). E023 관련 작업 A/B 시도 후 롤백 (thumbnails().set() 원래 작동 확인).
+- **2026-04-10:** studio_crawler.py --no-interactive 플래그 추가 (Task Scheduler 블로킹 방지).
+- **2026-04-10:** run_analytics.bat PYTHONUTF8=1 + 로그 리다이렉션 추가. PowerShell 날짜 + append-only 로그 구현.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -81,6 +84,9 @@
 - ChromeDriver: 146.0.7680.178 하드코딩
 - SONGS_PER_MIX: 20 / 날짜폴더: 2026-04-07_1, _2, _3
 - **브랜치 전략:** master 단일 운영 (dev 브랜치 폐기)
+- **YouTube API 안정성:** thumbnails().set() sleep 5초 + 3회 retry (E023 대응)
+- **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
+- **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -129,18 +135,4 @@
 - [ ] AB테스트 0/10 실패 해결
 - [ ] Shorts 실테스트, YouTube 설명 반영, History 기록 확인
 ### P1
-- [x] SEO 스크래퍼 실전적용 ✅ 완료
-- [ ] 포스트 프로세싱 / AI Disclosure
-- [ ] --test 플래그+로그저장+체크포인트 재시작 작업
-- [ ] 영상 설명 SEO 스크랩퍼 기반 자동생성
-- [ ] 해시태그 SEO 스크랩퍼 기반 자동생성
-- [ ] 채널 설명 SEO 스크랩퍼 기반 1회성 생성
-### P2
-- [ ] 프롬프트×성과 매핑 / 가중치 반영(70/30) / Fast Exit
-### P3
-- [ ] SaaS 랜딩페이지 / Udio 연동 / 댓글 감성분석
-
-## 🔧 커맨드
-cd C:\ThunderDrop && python master_pipeline.py
-python scripts/analytics_collector.py --channel yacha --days 7
-python scripts/studio_ab_tester.py --channel yacha
+- [x] SEO 스크래퍼 실전적
