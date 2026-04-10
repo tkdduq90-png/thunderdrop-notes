@@ -69,6 +69,7 @@
 - **2026-04-10:** thumbnails().set() sleep 5초 + 3회 retry 추가 (_upload_one). E023 관련 작업 A/B 시도 후 롤백 (thumbnails().set() 원래 작동 확인).
 - **2026-04-10:** studio_crawler.py --no-interactive 플래그 추가 (Task Scheduler 블로킹 방지).
 - **2026-04-10:** run_analytics.bat PYTHONUTF8=1 + 로그 리다이렉션 추가. PowerShell 날짜 + append-only 로그 구현.
+- **2026-04-10:** Claude API 최적화 완료 - prompt_builder claude_api() model 파라미터 추가 및 모델 ID claude-sonnet-4-6 최신화. crow_generate_intro/generate_hashtags/thumbnail 훅단어/scene JSON Haiku 전환. seo_scraper 클라이언트 singleton 전환. CLAUDE_API_KEY None 방어 및 해시태그 검증 로직 추가.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -87,6 +88,7 @@
 - **YouTube API 안정성:** thumbnails().set() sleep 5초 + 3회 retry (E023 대응)
 - **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
 - **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
+- **Claude API:** model=claude-sonnet-4-6 (최신), Haiku 전환 (훅단어/scene JSON), singleton 클라이언트, CLAUDE_API_KEY None 방어
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -126,13 +128,3 @@
 - 상태: 세팅 진행 중
 
 ## 🚀 SaaS
-- USP: 변수→성과 연결 데이터 기반 자동화 루프
-- 순서: Analytics수집✅ → 프롬프트×성과매핑 → 가중치반영(70/30) → 검증 → 베타 $49/월
-
-## 📋 TODO
-### P0
-- [ ] 3CROW 썸네일 3CROW 텍스트 제거
-- [ ] AB테스트 0/10 실패 해결
-- [ ] Shorts 실테스트, YouTube 설명 반영, History 기록 확인
-### P1
-- [x] SEO 스크래퍼 실전적
