@@ -74,6 +74,7 @@
 - **2026-04-11:** 디버깅 세션 완료 - seo_scraper 설명수집 0→10개 확대, 해시태그 채널제약 추가. master_pipeline Shorts thumb B/C fallback 구현. prompt_builder crow_get_lyrics track_name+fallback 로직 추가. AB테스터 실패원인 규명: Chrome 기존실행 문제 → _check_chrome_running() 모니터링으로 해결.
 - **2026-04-11:** AB 테스터 썸네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
 - **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
+- **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썸네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -81,6 +82,7 @@
 - 댓글 자동화
 - Shorts 실테스트, YouTube 설명 반영, History 기록 확인
 - **예정:** #3 다음사이클 AB테스터 정상작동 확인 필요
+- **미해결:** _channel_feedback no-op 구현, 3CROW 썸네일 A프롬프트 no text 누락 수정
 
 ### 기술 결정
 - Docker suno-api: hCaptcha 서버사이드 감지 → 완전 포기, pyautogui 유일
@@ -97,13 +99,4 @@
 - **Shorts 썸네일:** B/C fallback 구현 (C 없을 시 B 사용)
 - **가사 수집:** track_name 기반 + fallback 로직 (crow_get_lyrics)
 - **Leonardo AI:** regenerate 모드 시 크레딧 경고 메시지 제공
-
-## 🧠 핵심 전략
-### 니치 공식
-목적 > 장르 > 기타요소 (기타요소는 팬 고착 도구, 신규 유입 아님)
-
-### 제목 ABC
-- A: seo_generate_title (경쟁채널 키워드 분석 기반 SEO)
-- B: generate_hook_title type=B (감성/상황 훅 + fixed_keyword)
-- C: generate_hook_title type=C (숫자/행동 자극 훅 + fixed_keyword)
-- YACHA fixed_keyword:
+- **
