@@ -73,6 +73,7 @@
 - **2026-04-11:** AB 테스터 인터랙티브 UI 개발 완료 - 플래그 없이 실행 시 채널/영상/액션 선택 UI 제공. video_type 컬럼 추가 (Shorts AB skip). Chrome 실행 감지로 로그인 유지 문제 해결. sheets_logger/master_pipeline video_type 전달 연동 완료.
 - **2026-04-11:** 디버깅 세션 완료 - seo_scraper 설명수집 0→10개 확대, 해시태그 채널제약 추가. master_pipeline Shorts thumb B/C fallback 구현. prompt_builder crow_get_lyrics track_name+fallback 로직 추가. AB테스터 실패원인 규명: Chrome 기존실행 문제 → _check_chrome_running() 모니터링으로 해결.
 - **2026-04-11:** AB 테스터 썸네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
+- **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -91,10 +92,11 @@
 - **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
 - **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
 - **Claude API:** model=claude-sonnet-4-6 (최신), Haiku 전환 (훅단어/scene JSON), singleton 클라이언트, CLAUDE_API_KEY None 방어
-- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지, _check_chrome_running() 모니터링, 썸네일 모드 선택 (sheets/fallback_a/regenerate), thumb_a 빈값 경고
+- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지, _check_chrome_running() 모니터링, 썸네일 모드 선택 (sheets/fallback_a/regenerate), thumb_a 빈값 경고, regenerate 모드 thumbnail_builder 연동
 - **SEO 수집:** 설명 10개 수집, 채널별 해시태그 제약 (YACHA/3CROW 분리)
 - **Shorts 썸네일:** B/C fallback 구현 (C 없을 시 B 사용)
 - **가사 수집:** track_name 기반 + fallback 로직 (crow_get_lyrics)
+- **Leonardo AI:** regenerate 모드 시 크레딧 경고 메시지 제공
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -104,10 +106,4 @@
 - A: seo_generate_title (경쟁채널 키워드 분석 기반 SEO)
 - B: generate_hook_title type=B (감성/상황 훅 + fixed_keyword)
 - C: generate_hook_title type=C (숫자/행동 자극 훅 + fixed_keyword)
-- YACHA fixed_keyword: "Gym Phonk Mix 2026"
-- 3CROW fixed_keyword: "Night Drive Techno Mix 2026"
-- 플리/단곡: 영상 1개 업로드 + YouTube AB테스트 A/B/C 등록
-- 숏츠: 숏츠1=A, 숏츠2=B, 숏츠3=C 각각 업로드
-- 세계관은 썸네일+설명란 전용, 제목 금지
-
-### 썸
+- YACHA fixed_keyword:
