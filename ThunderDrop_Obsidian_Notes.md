@@ -71,14 +71,14 @@
 - **2026-04-10:** run_analytics.bat PYTHONUTF8=1 + 로그 리다이렉션 추가. PowerShell 날짜 + append-only 로그 구현.
 - **2026-04-10:** Claude API 최적화 완료 - prompt_builder claude_api() model 파라미터 추가 및 모델 ID claude-sonnet-4-6 최신화. crow_generate_intro/generate_hashtags/thumbnail 훅단어/scene JSON Haiku 전환. seo_scraper 클라이언트 singleton 전환. CLAUDE_API_KEY None 방어 및 해시태그 검증 로직 추가.
 - **2026-04-11:** AB 테스터 인터랙티브 UI 개발 완료 - 플래그 없이 실행 시 채널/영상/액션 선택 UI 제공. video_type 컬럼 추가 (Shorts AB skip). Chrome 실행 감지로 로그인 유지 문제 해결. sheets_logger/master_pipeline video_type 전달 연동 완료.
+- **2026-04-11:** 디버깅 세션 완료 - seo_scraper 설명수집 0→10개 확대, 해시태그 채널제약 추가. master_pipeline Shorts thumb B/C fallback 구현. prompt_builder crow_get_lyrics track_name+fallback 로직 추가. AB테스터 실패원인 규명: Chrome 기존실행 문제 → _check_chrome_running() 모니터링으로 해결.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
 - 포스트 프로세싱 (ambient 레이어링)
 - 댓글 자동화
-- AB테스트 0/10 실패 해결
 - Shorts 실테스트, YouTube 설명 반영, History 기록 확인
-- **예정:** --test 플래그+로그저장+체크포인트 재시작 작업
+- **예정:** #3 다음사이클 AB테스터 정상작동 확인 필요
 
 ### 기술 결정
 - Docker suno-api: hCaptcha 서버사이드 감지 → 완전 포기, pyautogui 유일
@@ -90,7 +90,10 @@
 - **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
 - **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
 - **Claude API:** model=claude-sonnet-4-6 (최신), Haiku 전환 (훅단어/scene JSON), singleton 클라이언트, CLAUDE_API_KEY None 방어
-- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지
+- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지, _check_chrome_running() 모니터링
+- **SEO 수집:** 설명 10개 수집, 채널별 해시태그 제약 (YACHA/3CROW 분리)
+- **Shorts 썸네일:** B/C fallback 구현 (C 없을 시 B 사용)
+- **가사 수집:** track_name 기반 + fallback 로직 (crow_get_lyrics)
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -113,13 +116,4 @@
 - 비중: 33/33/33 → 승자 50% → 70/30
 
 ### 변수 분리
-- CTR↓ = 패키징 문제 / 시청지속↓ = 음악 문제 / 구독전환↓ = 정체성 문제
-
-## 📊 데이터 인사이트
-- YACHA 초기: 노출 8500~11000, 추천 46~69% → 최근: 노출 29~72, 추천 0%
-- 원인: 시청지속 30초 이후 급락
-- 3CROW j6_2Rj0kipE: 검색 93.3%, 노출 2400 → Night Drive SEO 유일 성공
-- jdvYsTiTydQ 근육남 썸네일: 추천 60.6% → 용도 직접 연상이 세계관보다 효과적
-
-## 🔧 옵시디언 노트 시스템
-- 옵시디
+- CTR↓ = 패키
