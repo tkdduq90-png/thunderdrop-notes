@@ -72,6 +72,7 @@
 - **2026-04-10:** Claude API 최적화 완료 - prompt_builder claude_api() model 파라미터 추가 및 모델 ID claude-sonnet-4-6 최신화. crow_generate_intro/generate_hashtags/thumbnail 훅단어/scene JSON Haiku 전환. seo_scraper 클라이언트 singleton 전환. CLAUDE_API_KEY None 방어 및 해시태그 검증 로직 추가.
 - **2026-04-11:** AB 테스터 인터랙티브 UI 개발 완료 - 플래그 없이 실행 시 채널/영상/액션 선택 UI 제공. video_type 컬럼 추가 (Shorts AB skip). Chrome 실행 감지로 로그인 유지 문제 해결. sheets_logger/master_pipeline video_type 전달 연동 완료.
 - **2026-04-11:** 디버깅 세션 완료 - seo_scraper 설명수집 0→10개 확대, 해시태그 채널제약 추가. master_pipeline Shorts thumb B/C fallback 구현. prompt_builder crow_get_lyrics track_name+fallback 로직 추가. AB테스터 실패원인 규명: Chrome 기존실행 문제 → _check_chrome_running() 모니터링으로 해결.
+- **2026-04-11:** AB 테스터 썸네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -90,7 +91,7 @@
 - **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
 - **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
 - **Claude API:** model=claude-sonnet-4-6 (최신), Haiku 전환 (훅단어/scene JSON), singleton 클라이언트, CLAUDE_API_KEY None 방어
-- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지, _check_chrome_running() 모니터링
+- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지, _check_chrome_running() 모니터링, 썸네일 모드 선택 (sheets/fallback_a/regenerate), thumb_a 빈값 경고
 - **SEO 수집:** 설명 10개 수집, 채널별 해시태그 제약 (YACHA/3CROW 분리)
 - **Shorts 썸네일:** B/C fallback 구현 (C 없을 시 B 사용)
 - **가사 수집:** track_name 기반 + fallback 로직 (crow_get_lyrics)
@@ -109,11 +110,4 @@
 - 숏츠: 숏츠1=A, 숏츠2=B, 숏츠3=C 각각 업로드
 - 세계관은 썸네일+설명란 전용, 제목 금지
 
-### 썸네일 ABC
-- A: 세계관 Control (init_image 고정)
-- B: 용도 직접 연상 (YACHA=근육남+헬스장, 3CROW=야간드라이브)
-- C: 세계관+용도 합성
-- 비중: 33/33/33 → 승자 50% → 70/30
-
-### 변수 분리
-- CTR↓ = 패키
+### 썸
