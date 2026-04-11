@@ -1,5 +1,5 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-10*
+*최종 업데이트: 2026-04-11*
 
 ## 🎯 프로젝트 정체성
 **One-liner:** 데이터 → 분석 → 자동 반영 → 업로드 → 반복 (무한 루프)
@@ -70,6 +70,7 @@
 - **2026-04-10:** studio_crawler.py --no-interactive 플래그 추가 (Task Scheduler 블로킹 방지).
 - **2026-04-10:** run_analytics.bat PYTHONUTF8=1 + 로그 리다이렉션 추가. PowerShell 날짜 + append-only 로그 구현.
 - **2026-04-10:** Claude API 최적화 완료 - prompt_builder claude_api() model 파라미터 추가 및 모델 ID claude-sonnet-4-6 최신화. crow_generate_intro/generate_hashtags/thumbnail 훅단어/scene JSON Haiku 전환. seo_scraper 클라이언트 singleton 전환. CLAUDE_API_KEY None 방어 및 해시태그 검증 로직 추가.
+- **2026-04-11:** AB 테스터 인터랙티브 UI 개발 완료 - 플래그 없이 실행 시 채널/영상/액션 선택 UI 제공. video_type 컬럼 추가 (Shorts AB skip). Chrome 실행 감지로 로그인 유지 문제 해결. sheets_logger/master_pipeline video_type 전달 연동.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -89,6 +90,7 @@
 - **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
 - **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
 - **Claude API:** model=claude-sonnet-4-6 (최신), Haiku 전환 (훅단어/scene JSON), singleton 클라이언트, CLAUDE_API_KEY None 방어
+- **AB 테스터:** 인터랙티브 UI (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지
 
 ## 🧠 핵심 전략
 ### 니치 공식
@@ -120,11 +122,4 @@
 - jdvYsTiTydQ 근육남 썸네일: 추천 60.6% → 용도 직접 연상이 세계관보다 효과적
 
 ## 🔧 옵시디언 노트 시스템
-- 옵시디언 vault: C:\ThunderDrop\
-- 파일: docs/ThunderDrop_Obsidian_Notes.md
-- 스크립트: scripts/update_obsidian.py
-- 컨텍스트 유지: 새 대화 시작시 GitHub raw URL 읽기 → 대화 중 메모 → 마무리시 push
-- 역할 분리: 마스터 스트래티지(HTML)=전략/큰 그림, 옵시디언 노트=실무 현황+기술 결정+컨텍스트
-- 상태: 세팅 진행 중
-
-## 🚀 SaaS
+- 옵시디언 vault: C:\ThunderDrop
