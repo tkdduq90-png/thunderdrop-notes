@@ -1,5 +1,5 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-12*
+*최종 업데이트: 2026-04-13*
 
 ## 🎯 프로젝트 정체성
 **One-liner:** 데이터 → 분석 → 자동 반영 → 업로드 → 반복 (무한 루프)
@@ -24,14 +24,18 @@
 - BPM: 150~175 / 색상: 보라+레드
 - 고정태그: cowbell hits, chopped vocal chops, mega bass boosted, subwoofer shaking, extended mix, 3 minutes, do not fade early
 - 토큰: youtube_token_yacha.pickle
-- 오디오 경로: YACHA/audio
+- 오디오 경로: YACHA\audio
 
 ### 3CROW
 - ID: UC9bWppwPvgtC7sjsgIOMcHQ / 니치: Drive × Techno × 삼족오 세계관
 - BPM: 130~150 / 색상: 청록
 - 고정태그: mega bass boosted, occasional vocals, vocal stabs on drops, subwoofer shaking, extended mix, 3 minutes, do not fade early
 - 토큰: 3Crow\youtube_token_3crow.pickle
-- 오디오 경로: 3Crow/audio
+- 오디오 경로: 3Crow\audio
+
+### FocusArchitect
+- 오디오 경로: FocusArchitect\audio
+- 상태: 신규 채널 추가
 
 ### 공용
 - Sheets: music-220@thunderdrop.iam.gserviceaccount.com
@@ -48,7 +52,7 @@
 - master_pipeline.py: --dry-run 플래그 추가, 플리/단곡/숏츠 Title A/B/C 생성 연결 완료
 
 ### 최근 완료 ✅
-- suno_bot.py base_dir 채널별 분리 (YACHA/audio, 3Crow/audio)
+- suno_bot.py base_dir 채널별 분리 (YACHA\audio, 3Crow\audio, FocusArchitect\audio)
 - YACHA_DIR 경로 야차→YACHA 통일
 - dev 브랜치 복구: neon/shorts/B-C variants + mood word 컨텍스트 YACHA/3CROW 분리
 - claude_api() temperature 파라미터 복구
@@ -78,4 +82,4 @@
 - **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트 없음 → v1 폴링으로 대체. Nano Banana = platformModels 목록 없음, model 문자열 직접 지정. init_image I2I → guidances.image_reference 방식으로 교체. closeup 베이스 이미지 경계 붙어있어 flood fill 누끼 불가 → Leonardo I2I 매번 새 이미지 생성으로 해결.
 - **2026-04-12:** 썸네일 벤치마킹 완료 - YACHA 5채널(PHONK Club 39.8만, CURSEDEVIL 55.5만, Phonk Rival 2.64만, GHOFNIX 30.6만, REXER MUSIC 3.81만) / 3CROW 5채널(Aim To Head Mix 88.4만, The Grand Sound 61.6만, Chill Beat 15.1만, 97Kickstvr 4.44만, SynthWavesZ 7.14천) 분석. benchmark_thumbnails.html 생성 (10채널 × 8썸네일 80개).
 - **2026-04-12:** YACHA 썸네일 ABC 전략 확정 - A안: Baki 그림체(Keisuke Itagaki 스타일) 3개 확정(A-1: 얼굴 클로즈업 반반 조명, A-2: 등근육 뒷모습 B&W, A-3: 레드배경 뒷모습 고개 숙임). B안/C안은 다음 세션. 공통 스타일: Keisuke Itagaki/Grappler Baki manga style, monochrome B&W 또는 레드 배경, NO speed lines/gray tones/colored horns, 흰 짧은 머리/작은 뿔/바키 비율 캐릭터.
-- **2026-04-12:** 썸네일 인사이트 정리 - gym phonk 트렌드: 애니캐릭터+단색강렬배경+장르키워드 1단어. 뿔 있으면 괴물 느낌 → 흑백 모노크롬 뿔로 해결. 레드 배경 포화 → B&W가 차별화 포인트. 얼굴 클로
+- **2026-04-12:** 썸네일 인사이트 정리 - gym phonk 트렌드: 애니캐릭터+단색강렬배경+장르키워드 1단어. 뿔 있으면 괴물 느낌 → 
