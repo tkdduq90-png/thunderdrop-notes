@@ -75,7 +75,7 @@
 - **2026-04-11:** AB 테스터 썸네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
 - **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
 - **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썸네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
-- **2026-04-12:** yacha_thumbnail_variants.py 완성 - Leonardo I2I Nano Banana v2 + flood fill 누끼 + PIL 3중 레이어(배경→캐릭터→텍스트) 확정. BG_COLORS V1=crimson/V2=black/V3=darkgray. TEXT_LIST 9종 랜덤. 그림자 오버레이. raw 자동삭제. closeup pure white background 강제.
+- **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트 없음 → v1 폴링으로 대체. Nano Banana = platformModels 목록 없음, model 문자열 직접 지정. init_image I2I → guidances.image_reference 방식으로 교체. closeup 베이스 이미지 경계 붙어있어 flood fill 누끼 불가 → Leonardo I2I 매번 새 이미지 생성으로 해결.
 
 ### 개발 필요 ❌
 - STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
@@ -84,6 +84,7 @@
 - Shorts 실테스트, YouTube 설명 반영, History 기록 확인
 - **예정:** #3 다음사이클 AB테스터 정상작동 확인 필요
 - **미해결:** _channel_feedback no-op 구현, 3CROW 썸네일 A프롬프트 no text 누락 수정
+- **Leonardo v2 마이그레이션:** WIDTH 1472 → 1344로 조정, imagePrompts 문자열 전환, v1 폴링 유지, init_image → guidances.image_reference 교체, closeup 누끼 제거 후 매번 새 이미지 생성
 
 ### 기술 결정
 - Docker suno-api: hCaptcha 서버사이드 감지 → 완전 포기, pyautogui 유일
@@ -94,6 +95,4 @@
 - **YouTube API 안정성:** thumbnails().set() sleep 5초 + 3회 retry (E023 대응)
 - **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
 - **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
-- **Claude API:** model=claude-sonnet-4-6 (최신), Haiku 전환 (훅단어/scene JSON), singleton 클라이언트, CLAUDE_API_KEY None 방어
-- **AB 테스터 UI:** 인터랙티브 선택 모드 (플래그 불필요), video_type 컬럼 기반 Shorts skip, Chrome 감지 로그인 유지, _check_chrome_running() 모니터링, 썸네일 모드 선택 (sheets/fallback_a/regenerate), thumb_a 빈값 경고, regenerate 모드 thumbnail_builder 연동
-- **SEO 
+- **
