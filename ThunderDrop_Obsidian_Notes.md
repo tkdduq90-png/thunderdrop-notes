@@ -76,23 +76,6 @@
 - **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
 - **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썸네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
 - **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트 없음 → v1 폴링으로 대체. Nano Banana = platformModels 목록 없음, model 문자열 직접 지정. init_image I2I → guidances.image_reference 방식으로 교체. closeup 베이스 이미지 경계 붙어있어 flood fill 누끼 불가 → Leonardo I2I 매번 새 이미지 생성으로 해결.
-
-### 개발 필요 ❌
-- STEP 5: 성과 → 프롬프트/제목/썸네일 자동 반영 로직
-- 포스트 프로세싱 (ambient 레이어링)
-- 댓글 자동화
-- Shorts 실테스트, YouTube 설명 반영, History 기록 확인
-- **예정:** #3 다음사이클 AB테스터 정상작동 확인 필요
-- **미해결:** _channel_feedback no-op 구현, 3CROW 썸네일 A프롬프트 no text 누락 수정
-- **Leonardo v2 마이그레이션:** WIDTH 1472 → 1344로 조정, imagePrompts 문자열 전환, v1 폴링 유지, init_image → guidances.image_reference 교체, closeup 누끼 제거 후 매번 새 이미지 생성
-
-### 기술 결정
-- Docker suno-api: hCaptcha 서버사이드 감지 → 완전 포기, pyautogui 유일
-- FFmpeg: -hwaccel cuda + h264_nvenc (zoompan은 CPU 전용)
-- ChromeDriver: 146.0.7680.178 하드코딩
-- SONGS_PER_MIX: 20 / 날짜폴더: 2026-04-07_1, _2, _3
-- **브랜치 전략:** master 단일 운영 (dev 브랜치 폐기)
-- **YouTube API 안정성:** thumbnails().set() sleep 5초 + 3회 retry (E023 대응)
-- **Task Scheduler 호환성:** studio_crawler.py --no-interactive 플래그 (블로킹 방지)
-- **배치 인코딩:** run_analytics.bat PYTHONUTF8=1 + PowerShell 날짜 + append-only 로그
-- **
+- **2026-04-12:** 썸네일 벤치마킹 완료 - YACHA 5채널(PHONK Club 39.8만, CURSEDEVIL 55.5만, Phonk Rival 2.64만, GHOFNIX 30.6만, REXER MUSIC 3.81만) / 3CROW 5채널(Aim To Head Mix 88.4만, The Grand Sound 61.6만, Chill Beat 15.1만, 97Kickstvr 4.44만, SynthWavesZ 7.14천) 분석. benchmark_thumbnails.html 생성 (10채널 × 8썸네일 80개).
+- **2026-04-12:** YACHA 썸네일 ABC 전략 확정 - A안: Baki 그림체(Keisuke Itagaki 스타일) 3개 확정(A-1: 얼굴 클로즈업 반반 조명, A-2: 등근육 뒷모습 B&W, A-3: 레드배경 뒷모습 고개 숙임). B안/C안은 다음 세션. 공통 스타일: Keisuke Itagaki/Grappler Baki manga style, monochrome B&W 또는 레드 배경, NO speed lines/gray tones/colored horns, 흰 짧은 머리/작은 뿔/바키 비율 캐릭터.
+- **2026-04-12:** 썸네일 인사이트 정리 - gym phonk 트렌드: 애니캐릭터+단색강렬배경+장르키워드 1단어. 뿔 있으면 괴물 느낌 → 흑백 모노크롬 뿔로 해결. 레드 배경 포화 → B&W가 차별화 포인트. 얼굴 클로
