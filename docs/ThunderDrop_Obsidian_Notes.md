@@ -1,6 +1,17 @@
 # ThunderDrop Master Knowledge Base
 *최종 업데이트: 2026-04-13*
 
+## 📍 최근 세션
+*최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
+
+### 2026-04-13
+- 문서 레포 분리 완료 (notes-repo docs/ 단일 소스화)
+- update_obsidian.py 4건 수정: shutil.copy2 제거, subprocess utf-8, diff check, PROJECT_ROOT 삭제
+- CLAUDE.md 경로 절대경로 명시
+- ErrorLog E043~E045 기록
+
+---
+
 ## 🎯 프로젝트 정체성
 **One-liner:** 데이터 → 분석 → 자동 반영 → 업로드 → 반복 (무한 루프)
 **목표:** 월 $20,000 / 12개월 로드맵 / 채널 풀 20개
