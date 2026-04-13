@@ -45,7 +45,7 @@
 ## ⚙️ 파이프라인 현황
 ### 운영 중 ✅
 - Suno 음원 생성 (pyautogui) / 플리+단곡+Shorts 영상 생성
-- Leonardo AI 썸네일 A/B/C / YouTube API 업로드 (매일 21시)
+- Leonardo AI 썬네일 A/B/C / YouTube API 업로드 (매일 21시)
 - Analytics 수집 → Sheets / Studio 크롤링 / AB테스트 / dashboard.html
 - Task Scheduler (analytics 10시, git push 23시)
 - seo_scraper.py: generate_hook_title 추가 (Title B=감성훅/C=숫자자극, 경쟁채널 패턴 분석 기반)
@@ -68,18 +68,18 @@
 - **2026-04-09:** analytics_collector/studio_ab_tester 경로 버그 수정. studio_ab_tester cp949 인코딩 수정. AB테스트 thumb_C 누락 + title_B/C 미기록 버그 수정. Sheets Analytics_Manual 정리 - 144행→75행, 중복 69건 삭제, ab_registered 실제 등록 2건만 유지. 자율실행 프롬프트 완성 (claude --dangerously-skip-permissions + mode1, settings.json 불필요).
 - **2026-04-09:** 자율주행 첫 성공 - run_test_auto.py 생성, suno_bot.py cp949 수정, 체크포인트 활용, 3시간 만에 YACHA 5개 비공개 업로드 완료. AB테스트 자율주행 성공 - thumb_c 없을때 thumb_b 폴백 + 버튼 대기 30초 수정, YACHA 2/2 등록. Sheets video_id 누락 영상 추가 (YACHA 7건, 3CROW 6건). 자율주행 프롬프트 확정 (mode1 전체 + AB테스트 포함 버전).
 - **2026-04-09:** AB테스트 4개 영상 전부 등록 완료 - DuT9l-v8fFQ(YACHA 플리), HRcpM2vxRk0(YACHA 단곡), j98jZbijN1A(3CROW 플리), Xe91nBNqjXs(3CROW 단곡) 모두 Sheets ab_registered=TRUE 처리
-- **2026-04-09:** Shorts 영상효과 beat_video.py 통합(is_shorts=True), color grading 제거, Shorts raw 이미지 사용. 3CROW B 썸네일 6종 확정(좌->우 주행+수평네온+6색). C 썸네일 6종 확정(정적 스포츠카+6색). drawbox 제거. dashboard thumb_B/C 컬럼 인덱스 수정(9->10, 10->11). 썸네일 경로 서브폴더 분기(playlist/single/shorts). AB테스트 0/10 실패 미해결.
-- **2026-04-09:** SEO 영상설명/해시태그 전체 적용. 썸네일 keyword_hints 주입. History 21컬럼 확장. analytics_collector 승자제목 자동 업데이트. TEST MODE Sheets skip. Shorts temp 폴더 충돌 수정. Analytics_Manual 정리(87→65행). 미완료: Shorts 실테스트, YouTube 설명 반영, History 기록 확인.
+- **2026-04-09:** Shorts 영상효과 beat_video.py 통합(is_shorts=True), color grading 제거, Shorts raw 이미지 사용. 3CROW B 썬네일 6종 확정(좌->우 주행+수평네온+6색). C 썬네일 6종 확정(정적 스포츠카+6색). drawbox 제거. dashboard thumb_B/C 컬럼 인덱스 수정(9->10, 10->11). 썬네일 경로 서브폴더 분기(playlist/single/shorts). AB테스트 0/10 실패 미해결.
+- **2026-04-09:** SEO 영상설명/해시태그 전체 적용. 썬네일 keyword_hints 주입. History 21컬럼 확장. analytics_collector 승자제목 자동 업데이트. TEST MODE Sheets skip. Shorts temp 폴더 충돌 수정. Analytics_Manual 정리(87→65행). 미완료: Shorts 실테스트, YouTube 설명 반영, History 기록 확인.
 - **2026-04-10:** thumbnails().set() sleep 5초 + 3회 retry 추가 (_upload_one). E023 관련 작업 A/B 시도 후 롤백 (thumbnails().set() 원래 작동 확인).
 - **2026-04-10:** studio_crawler.py --no-interactive 플래그 추가 (Task Scheduler 블로킹 방지).
 - **2026-04-10:** run_analytics.bat PYTHONUTF8=1 + 로그 리다이렉션 추가. PowerShell 날짜 + append-only 로그 구현.
 - **2026-04-10:** Claude API 최적화 완료 - prompt_builder claude_api() model 파라미터 추가 및 모델 ID claude-sonnet-4-6 최신화. crow_generate_intro/generate_hashtags/thumbnail 훅단어/scene JSON Haiku 전환. seo_scraper 클라이언트 singleton 전환. CLAUDE_API_KEY None 방어 및 해시태그 검증 로직 추가.
 - **2026-04-11:** AB 테스터 인터랙티브 UI 개발 완료 - 플래그 없이 실행 시 채널/영상/액션 선택 UI 제공. video_type 컬럼 추가 (Shorts AB skip). Chrome 실행 감지로 로그인 유지 문제 해결. sheets_logger/master_pipeline video_type 전달 연동 완료.
 - **2026-04-11:** 디버깅 세션 완료 - seo_scraper 설명수집 0→10개 확대, 해시태그 채널제약 추가. master_pipeline Shorts thumb B/C fallback 구현. prompt_builder crow_get_lyrics track_name+fallback 로직 추가. AB테스터 실패원인 규명: Chrome 기존실행 문제 → _check_chrome_running() 모니터링으로 해결.
-- **2026-04-11:** AB 테스터 썸네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
+- **2026-04-11:** AB 테스터 썬네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
 - **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
-- **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썸네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
+- **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썬네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
 - **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트 없음 → v1 폴링으로 대체. Nano Banana = platformModels 목록 없음, model 문자열 직접 지정. init_image I2I → guidances.image_reference 방식으로 교체. closeup 베이스 이미지 경계 붙어있어 flood fill 누끼 불가 → Leonardo I2I 매번 새 이미지 생성으로 해결.
-- **2026-04-12:** 썸네일 벤치마킹 완료 - YACHA 5채널(PHONK Club 39.8만, CURSEDEVIL 55.5만, Phonk Rival 2.64만, GHOFNIX 30.6만, REXER MUSIC 3.81만) / 3CROW 5채널(Aim To Head Mix 88.4만, The Grand Sound 61.6만, Chill Beat 15.1만, 97Kickstvr 4.44만, SynthWavesZ 7.14천) 분석. benchmark_thumbnails.html 생성 (10채널 × 8썸네일 80개).
-- **2026-04-12:** YACHA 썸네일 ABC 전략 확정 - A안: Baki 그림체(Keisuke Itagaki 스타일) 3개 확정(A-1: 얼굴 클로즈업 반반 조명, A-2: 등근육 뒷모습 B&W, A-3: 레드배경 뒷모습 고개 숙임). B안/C안은 다음 세션. 공통 스타일: Keisuke Itagaki/Grappler Baki manga style, monochrome B&W 또는 레드 배경, NO speed lines/gray tones/colored horns, 흰 짧은 머리/작은 뿔/바키 비율 캐릭터.
-- **2026-04-12:** 썸네일 인사이트 정리 - gym phonk 트렌드: 애니캐릭터+단색강렬배경+장르키워드 1단어. 뿔 있으면 괴물 느낌 → 
+- **2026-04-12:** 썬네일 벤치마킹 완료 - YACHA 5채널(PHONK Club 39.8만, CURSEDEVIL 55.5만, Phonk Rival 2.64만, GHOFNIX 30.6만, REXER MUSIC 3.81만) / 3CROW 5채널(Aim To Head Mix 88.4만, The Grand Sound 61.6만, Chill Beat 15.1만, 97Kickstvr 4.44만, SynthWavesZ 7.14천) 분석. benchmark_thumbnails.html 생성 (10채널 × 8썬네일 80개).
+- **2026-04-12:** YACHA 썬네일 ABC 전략 확정 - A안: Baki 그림체(Keisuke Itagaki 스타일) 3개 확정(A-1: 얼굴 클로즈업 반반 조명, A-2: 등근육 뒷모습 B&W, A-3: 레드배경 뒷모습 고개 숙임). B안/C안은 다음 세션. 공통 스타일: Keisuke Itagaki/Grappler Baki manga style, monochrome B&W 또는 레드 배경, NO speed lines/gray tones/colored horns, 흰 짧은 머리/작은 뿔/바키 비율 캐릭터.
+- **2026-04-12:** 썬네일 인사이트 정리 - gym phonk 트렌드: 애니캐릭터+단색강렬배경+장르키워드 1단어. 뿔 있으면 괴물 느낌 → 
