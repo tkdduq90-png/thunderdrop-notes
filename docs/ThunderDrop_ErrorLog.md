@@ -232,6 +232,64 @@
 | ID | 증상 | 추정 원인 | 상태 |
 |---|---|---|---|
 | E024 | AB 테스트 0/10 실패 케이스 | Chrome 프로필 충돌 (Chrome 열린 채 실행) | Chrome 닫고 재실행 필요 |
+| E_TODO | verify_upload.py 미제작 | 파이프라인이 자체 검증하는 구조 → 신뢰도 낮음 | 독립 스크립트 제작 필요 |
+
+---
+
+### [E025] Shorts temp 폴더 충돌
+- 증상: short_clip_0_1.wav 등 2번째 이후 Shorts FFmpeg 오디오 merge 실패
+- 원인: 6개 Shorts가 동일 temp_shorts/ 폴더 공유 → 중간 파일 충돌
+- 해결: temp_dir을 temp_shorts/{day_idx}_{short_sub_idx}/로 변경
+- 파일: master_pipeline.py build_shorts()
+
+---
+
+### [E026] 가사 20곡 동일 (mode 1 Suno 음원 단조화)
+- 증상: tasks.txt의 20곡 전부 완전히 동일한 가사 블록을 공유, Suno 보컬 파트 반복
+- 원인: step1_generate_prompts() 내부에서 `lyrics = yacha_generate_lyrics(...)` / `crow_get_lyrics(...)` 호출이 `if j == 0:` 블록 안으로 잘못 들여쓰기됨 → j=0에서만 가사 생성, j=1..19는 j=0의 lyrics 변수를 그대로 재사용
+- 해결: lyrics 생성 호출을 `else:` 블록 내부(`suno_prompt` 생성 바로 아래)로 이동. `if j == 0:` 블록에는 `schedule[-1]["suno_style_prompt"] = suno_prompt` 한 줄만 남김. 매 루프 새로 뽑힌 `mood`가 `yacha_generate_lyrics(genre, purpose, mood, ...)` 호출에 반영되도록 유지
+- 파일: prompt_builder.py step1_generate_prompts()
+- 부수효과: Claude API 호출 횟수 1회 → 20×num_days회. 크레딧 소진 시 fallback 하드코딩 가사로 재차 동일화될 위험 있음 → 크레딧 모니터링 필요
+
+---
+
+### [E027] YACHA/3CROW 영상 설명 purpose 혼재 (Drive/Gym)
+- 증상: YACHA(Gym Phonk) 플리 설명에 "car music", "night drive", "late-night drive" 등 3CROW용 키워드가 등장. 반대로 3CROW 설명에 "workout"/"gym" 키워드가 섞여 들어오는 역방향 사례도 발생 가능
+- 원인: seo_scraper.generate_description()이 Claude에게 `Channel: {channel_key.upper()}` 문자열만 전달 → LLM이 채널 컨텍스트를 문자로만 인식. competitor analysis에서 잡힌 키워드(`keyword_clusters`)에 타 채널 장르 단어가 섞여 있으면 그대로 재사용함
+- 해결: generate_description() 프롬프트에 `channel_constraint` 블록 주입. YACHA="GYM WORKOUT ONLY + drive/car/road/midnight/late-night drive 금지", 3CROW="NIGHT DRIVE ONLY + gym/workout/lifting/reps/training 금지". CTA도 채널별 고정 문자열("🔔 New gym phonk every day" / "🔔 New night drive music every day")로 하드코딩하여 LLM이 rephrase 못 하게 함
+- 파일: seo_scraper.py generate_description()
+- 관련: analyze_title_patterns() JSON 파싱 실패 시 `{"raw": text}` 반환 → 호출자 `"error" in patterns` 가드 우회 → 잘못된 패턴으로 제목 생성되던 부수 버그도 `{"error": "json parse failed", "raw": text}` 반환으로 함께 수정
+
+---
+
+### [E028] AB 테스트 "테스트 설정" 버튼 예약 비공개 영상에서 비활성 판단 실패
+- 증상: 2026-04-10 mode 1 run에서 studio_ab_tester.py가 8건 0성공. 모든 영상에서 "30초 후에도 비활성 상태"로 포기
+- 원인 3가지:
+  1. 셀렉터가 `document.querySelectorAll('*')` 전체 DOM 순회 + `children.length === 0` leaf 조건 + `textContent === 'target'` 완전 일치 → 느리고 취약. 반환된 요소가 `<span>` (버튼 내부 라벨)이라 disabled 상태는 부모 `ytcp-button`에서 별도 조회 필요
+  2. 대기 시간 30초 고정 (60회 × 0.5초) — 예약 비공개 영상의 YouTube 내부 처리가 완료되기 전에 타임아웃
+  3. `except Exception: pass` 후 `is_ready = True`로 빠져서 **예외 발생 시 오히려 "활성"으로 오탐**. stale element 발생 시 치명적
+- 해결:
+  1. 셀렉터를 `document.querySelectorAll('ytcp-button')`로 변경, `textContent.includes(target)` 부분일치. 반환 객체가 바로 `ytcp-button`이라 disabled 체크가 부모 탐색 없이 바로 가능 → `parent_dis` 체크 로직 제거
+  2. 대기 시간 30초 → 10분 (600회 × 1초). 60초마다 진행상황 로그 출력 ("여전히 비활성 Xs 경과")
+  3. `except Exception as e: print(...); time.sleep(1); continue` — 예외 시 활성으로 간주하지 않고 계속 대기
+- 파일: scripts/studio_ab_tester.py
+- 비고: Shadow DOM에 버튼이 있는 경우는 여전히 미해결 (`querySelectorAll`이 shadow root 관통 안 함). 추후 필요 시 `driver.find_element` + shadow root traversal 추가 고려
+
+---
+
+### [E029] Shorts thumbnails().set() 즉시 업로드 타이밍 실패
+- 증상: 테스트 모드(즉시 업로드) 시 Shorts 썸네일 미적용
+- 원인: videos().insert() 완료 직후 바로 thumbnails().set() 호출 → YouTube 서버 처리 전
+- 해결: thumbnails().set() 전 sleep(5) + 최대 3회 retry (간격 5초)
+- 파일: master_pipeline.py _upload_one()
+
+---
+
+### [E030] studio_crawler.py Task Scheduler 실행 시 input() 블로킹
+- 증상: 오전 10시 자동 실행 시 채널 선택창 뜨며 멈춤
+- 원인: 세션 만료 시 wait_for_studio_login()에서 input() 대기 발생
+- 해결: --no-interactive 플래그 추가. run_analytics.bat에 적용
+- 파일: scripts/studio_crawler.py, run_analytics.bat
 
 ---
 
@@ -242,3 +300,231 @@
 3. **브랜치 switch 전 merge 누락** → 작업 내용 소실
 4. **Windows cp949 환경 이모지 출력** → 항상 `PYTHONUTF8=1` 또는 `sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`
 5. **동일 pickle 파일 두 채널 공유** → 채널별 독립 토큰 필수
+
+---
+
+## 2026-04-10 API 최적화 세션 예방적 수정
+
+- [PREVENTION] seo_scraper.py CLAUDE_API_KEY None 시 RuntimeError 조기 raise → 모호한 AttributeError 방지
+- [PREVENTION] generate_hashtags 해시태그 10개 미만 시 fallback 트리거 → Haiku 전환 후 품질 drift 방어
+- [FIXED] seo_scraper.py import 순서 PEP 8 준수 (pickle stdlib → local import 순)
+- [NOTE] claude-sonnet-4-20250514 → claude-sonnet-4-6 전체 최신화 (prompt_builder, seo_scraper)
+- [NOTE] seo_scraper Anthropic 클라이언트 singleton 전환 (6곳 재생성 → 모듈 레벨 1개)
+
+---
+
+## 2026-04-11 AB 테스터 인터랙티브 UI 개발
+
+- [FEAT] studio_ab_tester.py 플래그 없이 실행 시 인터랙티브 모드 (채널/영상/액션 선택 UI)
+- [FEAT] video_type 컬럼 추가 → Shorts AB 테스트 자동 skip
+- [FIXED] Chrome 실행 중 감지 → 로그인 유지 문제 근본 해결 (_check_chrome_running)
+- [FEAT] sheets_logger/master_pipeline video_type 전달 연동
+- [NOTE] _check_chrome_running subprocess timeout=5 + returncode 체크 추가 (코드리뷰 반영)
+
+---
+
+### [E031] search_competitor_descriptions 설명 수집 0개
+- **증상:** 설명 수집 완료: 0개 — 설명/해시태그가 빈 컨텍스트로 생성됨
+- **원인:** videoCategoryId="10" 고정 (night drive/gym 영상은 Music 외 카테고리), 구독자 필터로 전부 제외, 빈 결과 캐시 저장 → 이후 히트로 계속 0개
+- **해결:** videoCategoryId 제거, 구독자 필터 전체 제거, if results: 가드로 빈 결과 캐시 차단
+- **파일:** seo_scraper.py search_competitor_descriptions()
+
+---
+
+### [E032] generate_hashtags YACHA/3CROW 채널 혼재
+- **증상:** YACHA 해시태그에 drive/night, 3CROW에 gym/workout 태그 혼입
+- **원인:** channel_key를 프롬프트 문자열에만 삽입, 채널별 금지어 제약 없음
+- **해결:** channel_constraint 분기 추가 — YACHA: gym/phonk only, 3CROW: night drive/techno only
+- **파일:** seo_scraper.py generate_hashtags()
+
+---
+
+### [E033] Shorts thumbnail_B/C Leonardo 실패 시 미기록 (E023 재발)
+- **증상:** Shorts B/C 썸네일 sched_entry 누락
+- **원인:** if thumb_variants.get("B"): 조건으로 Leonardo 실패 시 필드 자체가 안 들어감
+- **해결:** 조건 제거, raw fallback 항상 기록
+- **파일:** master_pipeline.py build_shorts()
+- **재발 여부:** E023 동일 원인, 근본 수정 완료
+
+---
+
+### [E034] crow_get_lyrics 폴백 20곡 동일 의심
+- **증상:** API 실패 시 20곡 가사 동일 가능성
+- **원인:** try/except 없이 에러 전파, 고정 2단어 폴백 반환
+- **해결:** try/except 추가 + track_name 파라미터로 곡별 동적 폴백
+- **파일:** prompt_builder.py crow_get_lyrics()
+
+---
+
+### [E035] FFmpeg drawtext 특수문자 파싱 오류
+- **증상:** Claude API 반환값에 콜론/콤마 포함 시 FFmpeg 필터 파싱 깨짐
+- **원인:** `replace("'", "\\'").replace("&", "and")` 만 적용, 콜론/콤마 미이스케이프
+- **해결:** `.replace(":", "\\:").replace(",", "\\,")` 추가
+- **파일:** thumbnail_builder.py yacha_add_text_overlay() L281
+
+---
+
+### [E035-2] suno_done.flag / tasks.txt / suno_bot.py 경로 불일치
+- **증상:** step2_wait_for_suno()에서 suno_bot.py 못 찾음 + suno_done.flag 감지 실패
+- **원인:** CHANNEL_CONFIG base_dir이 루트(`C:\ThunderDrop`)로 설정되어 suno_bot.py 경로가 `YACHA\audio\suno_bot.py`로 조합됨. suno_done.flag도 루트에서 감시하지만 suno_bot은 `YACHA\audio`에 생성
+- **해결:** base_dir → 채널별 audio 폴더(`YACHA\audio`, `3Crow\audio`, `FocusArchitect\audio`), tasks.txt/upload_schedule.json → channel_dir 기준 통일, suno_bot.py 경로 루트 하드코딩
+- **파일:** `master_pipeline.py`, `prompt_builder.py`, `suno_bot.py`
+
+### [E036] 썸네일 시스템 구조적 버그 9건 (2026-04-13)
+
+**증상**: 
+- Shorts 썸네일 Studio 미반영
+- 플리 썸네일 업로드 videoNotFound 404
+- B/C 썸네일 텍스트 오버레이가 B-roll에 섞여 들어감
+
+**원인**: 
+전수조사 결과 `thumbnail_builder.py` / `yacha_thumbnail_variants.py` 
+구조적 문제:
+1. B 해상도 요청(1280×720) vs 실제(1024×1024) 불일치 - Leonardo v2 기본값
+2. generate_thumbnail_variants() B 섹션 is_shorts 미전달
+3. C 섹션 variant_num=0 하드코딩 (E023 재발)
+4. C 섹션 video_type 미전달 → playlist 경로 저장
+5. generate_yacha_thumbnail() thumb_prompt="" 반환
+6. yacha_add_text_overlay() "PLAYLIST" 하드코딩
+7. fixed_colors dead parameter
+8. YACHA_B_NEGATIVE_PROMPT 정의만, 미사용
+9. Shorts _log_title_variants 미호출
+
+**해결**: 
+패치 포기. `thumbnail_service.py` 신규 단일 모듈로 전면 재설계.
+Raw/Final 분리, Leonardo v2 단일화, A/B/C 통합 진입점.
+Phase 1~5 단계별 마이그레이션.
+
+**파일**: thumbnail_service.py (신규), master_pipeline.py (호출부), 
+beat_video.py (B-roll 경로)
+
+---
+
+# 신규 포맷 (E037~)
+
+독자: 다음 세션의 Claude. 작업 시작 전 작업 영역 태그로 grep.
+포맷: 근본원인 1줄 + 체크리스트 + 재발 목록.
+
+---
+
+## [E037] 이식 시 상수·페이로드·해상도 필드 누락
+태그: #이식 #leonardo #payload #해상도
+재발: 3회 / 2주
+커밋: 78d801b, ccac432
+
+근본원인: "이식"을 함수 로직 복사로만 해석. 상수/페이로드 필드/매직넘버 검증 누락. Mock 단위 테스트가 이 차이를 못 잡음.
+
+체크리스트 (이식 작업 전):
+- 원본/신규 파일 상수 전수 diff (`grep -E '^[A-Z_]+ = '`)
+- API 페이로드 딕셔너리 필드 단위 diff (누락/추가/변경 전부)
+- 매직넘버(해상도/BPM/색상/엔드포인트 URL/모델명) grep 대조
+- 라이브 테스트 먼저 설계 (E038 참조)
+- 공식 API 문서 확인, 추측 금지
+
+재발:
+- v1 → v2 endpoint 조용히 변경 (yacha_thumbnail_variants → thumbnail_service)
+- 해상도 1344×768 → 1280×720 (Leonardo v2 VALIDATION_ERROR)
+- 폰트 경로 콜론 미이스케이프 `C:/...` (FFmpeg drawtext PARSE ERROR, 6/9 silent)
+
+---
+
+## [E038] Mock 단위 테스트 과신, 라이브 검증 누락
+태그: #테스트 #mock #라이브검증
+재발: 1회
+커밋: 78d801b
+
+근본원인: Mock은 "함수가 호출됐는가"만 검증. "그 호출이 외부 시스템에서 유효한가"는 검증 불가. 고정 dict 반환, 에러 시뮬레이션 없음, side effect 없음.
+
+체크리스트 (신규 모듈 구현 시):
+- 라이브 테스트 스크립트를 mock 테스트와 동시에 설계
+- "완료" 기준 = mock PASS 아님. 라이브 PASS여야 완료
+- 라이브는 최소 1회 실제 API 호출 포함 (과금 불가피)
+- 라이브 성공 판정: HTTP 200 + 반환 구조 검증 + 파일 존재/크기>0 + WARN 0건
+- 과금 절약: 최소 케이스로 설계 (video_type 1개 × variant 3개 등)
+
+재발:
+- Phase 1 mock 13/13 PASS → 라이브 호출 시 AttributeError + 6/9 silent 실패
+
+---
+
+## [E039] 부분 성공을 성공으로 판정
+태그: #테스트판정 #WARN #거짓성공
+재발: 1회
+커밋: ccac432
+
+근본원인: 성공 기준이 느슨. "파일 존재" = 성공으로 판정하고 내용 검증 생략. WARN을 "성공이지만 경고"로 해석. Fallback이 silent하게 동작해서 사용자가 실패 인지 못 함.
+
+체크리스트 (라이브 테스트 판정 시):
+- WARN 로그 0건 엄격 강제
+- 파일 검증 = 존재 + 크기 > 0 + 내용 (텍스트 오버레이면 final 크기 > raw 크기)
+- Fallback 경로는 stderr/traceback 로깅 필수 (silent 금지)
+- 보고 시 "N/N PASS"와 별개로 `grep -c WARN` 결과 명시
+- WARN 1건이라도 = 실패. 부분 성공 금지.
+
+재발:
+- Phase 1 라이브: "9/9 PASS" 보고, 실제 [WARN] text overlay 6/9 silent
+
+---
+
+## [E040] 리팩토링 시 Sheets 스키마 변경 → 하위 호환 위반
+태그: #하위호환 #sheets #스키마 #어댑터
+재발: 0회 (잠재, 사전 차단)
+커밋: be2979d
+
+근본원인: 신규 모듈이 "더 풍부한 정보"를 반환한다고 어댑터가 그대로 전달하면, Sheets 컬럼에 기존과 다른 형태의 값이 쌓임. 기존 값들로 이미 암묵적 계약 형성돼 있음. 분석 쿼리 + E010(셀 한도) 리스크.
+
+체크리스트 (어댑터/리팩토링 작업 시):
+- 구 API 반환값 각 필드의 실제 값 샘플 확인 (Sheets 또는 로그)
+- 어댑터 원칙: "Wrap, don't enhance" - 변환만, 개선 금지
+- 정보 확장 필요 시: 기존 필드 보존 + 새 필드 추가. 기존 필드 오염 금지
+- Sheets 컬럼 형태 변경 전 E010 영향 평가
+- "풍부함"이 목표면 별도 Phase로 분리
+
+재발:
+- Phase 2.0 어댑터: thumb_prompt 필드에 Leonardo 전문 전달 vs 빈 문자열 유지 논의 → 빈 문자열 확정. 프롬프트 로깅은 Phase 5로 분리.
+
+---
+
+## [E041] else 블록 재구성 시 빈 줄 누락
+태그: #코드스타일 #refactor #gate3
+재발: 1회 (초발)
+커밋: 70a0465
+
+근본원인: master_pipeline.py 에서 if/else 플래그 분기를 새로 도입하면서 기존 else 블록 안으로 코드를 들여쓰기할 때, 블록 마지막 라인과 다음 블록 사이의 빈 줄이 사라짐. 기능 영향 없으나 code-review Important 이슈.
+
+증상:
+- Phase 2.1 build_shorts() else 블록 selected_thumb = ... 다음 bg_image = ( 직전 빈 줄 누락
+- 원본 HEAD 는 해당 위치에 빈 줄 존재
+- 라이브 테스트 전부 통과, pytest 전부 통과
+- code-reviewer 스킬만 발견
+
+체크리스트 (if/else 블록 재구성 시):
+- diff 검토 시 라인 수 변화만 보지 말고 빈 줄 대조
+- if/else 분기 재구성 후 기존 스타일 (빈 줄 포함) 유지
+- code-review 스킬을 커밋 전 필수 게이트로 유지
+
+재발:
+- 2026-04-13 Phase 2.1 build_shorts() else 블록 (초발)
+
+---
+
+## [E042] 레거시 삭제 시 scripts/ 하위 테스트 파일 스캔 누락
+태그: #refactor #cleanup #dead-reference #grep범위
+재발: 1회 (초발)
+커밋: e2139bd
+
+근본원인: 레거시 함수 삭제 작업 시 루트 디렉터리 파일만 grep 검사, scripts/ 하위 폴더 누락. 삭제된 함수를 호출하는 파일이 남아 실행 시 AttributeError 발생.
+
+증상:
+- Phase 4 레거시 제거 후 Gate 1 diff 검증 통과
+- code-review 에서 scripts/test_thumb_gen.py 발견: thumbnail_builder.yacha_add_text_overlay(...) 호출 잔존
+- 실행 시 AttributeError: module has no attribute
+
+체크리스트 (레거시 제거 작업 시):
+- grep -rn 으로 프로젝트 전체 스캔 (scripts/, tests/, utils/ 등 하위 폴더 포함)
+- 함수명 + import 문 둘 다 검색 (from X import Y / X.Y())
+- --include="*.py" 사용 시 폴더 깊이 제한 없음 확인
+- code-review 를 2차 안전망으로 유지
+
+재발:
+- 2026-04-13 Phase 4 Gate 3 Critical (초발): scripts/test_thumb_gen.py 잔존
