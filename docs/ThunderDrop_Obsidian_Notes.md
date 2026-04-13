@@ -94,3 +94,47 @@
 - **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트 없음 → v1 폴링으로 대체. Nano Banana = platformModels 목록 없음, model 문자열 직접 지정. init_image I2I → guidances.image_reference 방식으로 교체. closeup 베이스 이미지 경계 붙어있어 flood fill 누끼 불가 → Leonardo I2I 매번 새 이미지 생성으로 해결.
 - **2026-04-12:** 썬네일 벤치마킹 완료 - YACHA 5채널(PHONK Club 39.8만, CURSEDEVIL 55.5만, Phonk Rival 2.64만, GHOFNIX 30.6만, REXER MUSIC 3.81만) / 3CROW 5채널(Aim To Head Mix 88.4만, The Grand Sound 61.6만, Chill Beat 15.1만, 97Kickstvr 4.44만, SynthWavesZ 7.14천) 분석. benchmark_thumbnails.html 생성 (10채널 × 8썬네일 80개).
 - **2026-04-12:** YACHA 썬네일 ABC 전략 확정 - A안: Baki 그림체(Keisuke Itagaki 스타일) 3개 확정(A-1: 얼굴 클로즈업 반반 조명, A-2: 등근육 뒷모습 B&W, A-3: 레드배경 뒷모습 고개 
+
+---
+
+## 📍 현재 상태
+
+### 다음 세션 권장 우선순위
+
+**1순위: Phase 5 미스터리 디버깅 (추천)**
+- 플리 404 / Shorts Studio 미반영 재현 시도
+- Phase 2/4 완료 후 자연 해결됐는지 확인 (구조 변경이 이슈를 해결했을 가능성)
+- 재현 시 원인 기록만, 수정은 별도 Phase 로 분리
+- 이유: 운영 이슈 직결, 현재 구조 정비 직후라 검증 적기
+- 예상 소요: 30분 (진단만)
+
+**2순위: Phase 3 3CROW / FocusArchitect 이전**
+- 3CROW 와 FocusArchitect 를 thumbnail_service 신규 경로로 전환
+- Phase 1/2/4 패턴 재적용:
+  * 사전 조사 (공유 함수 식별, track_titles 등 파라미터 용도)
+  * 어댑터 확장 (build_and_adapt_crow, build_and_adapt_fa)
+  * 플래그 분기 또는 단순 분기
+  * 레거시 제거
+- 주의: keyword_hints 는 3CROW 에서 실사용 중 (_generate_mood_word → Haiku 주입). 어댑터 확장 시 필수 파라미터로 포함.
+- 예상 소요: 2~3 세션 분량
+
+**3순위: 유지보수 (블로커 B-deadcode)**
+- thumbnail_service.py 잔존 dead code 점검:
+  * YACHA_B_NEGATIVE_PROMPT (정의만 존재)
+  * YACHA_B_INIT_STRENGTH (grep 0건)
+  * YACHA_B_GENRE_MOOD (grep 0건)
+  * 그 외 Phase 1 이식 잔재 가능성
+- Phase 3 시작 전 정리 권장
+- 예상 소요: 30분
+
+**4순위 (장기): keyword_hints 신기능 도입 여부 (B-keyword)**
+- YACHA 에 keyword_hints 를 "신기능" 으로 도입할지 결정
+- SEO 품질 업그레이드 관점
+- Phase 6 이상에서 논의
+
+---
+
+## 📋 다음 세션 시작 시 체크리스트
+
+- [ ] `📍 현재 상태 → 다음 세션 권장 우선순위` 확인
+- [ ] 1순위 작업 선택 또는 마스터 오 재확정
