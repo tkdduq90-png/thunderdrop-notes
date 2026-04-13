@@ -571,3 +571,57 @@ exit 0 (변경 없음) → `"변경사항 없음 - commit/push 생략"` 출력 �
 
 재발:
 - 2026-04-13 Phase 4 Gate 3 Critical (초발): scripts/test_thumb_gen.py 잔존
+
+---
+
+## [E046] YouTube 중복 콘텐츠 무음 삭제 — ghost video_id (2026-04-13)
+태그: #upload #youtube #duplicate #ghost #playlist
+재발: 1회 (초발)
+커밋: Phase5 진단 (수정 미구현)
+
+근본원인: 동일 schedule.json을 여러 번 재실행하면 동일 오디오 파일을 여러 차례 업로드. YouTube 중복 콘텐츠 감지 시스템이 videos.insert() 응답에 200 OK + video_id를 반환한 뒤 내부적으로 영상을 무음 삭제. 반환된 video_id는 실제로 존재하지 않음 → thumbnails.set() 시 404 videoNotFound.
+
+증상:
+- videos.insert() 성공 → 로그에 video_id 기록 → thumbnails.set() 3회 retry 전부 404
+- YouTube Studio에서 해당 video_id 조회 불가
+- 같은 날 동일 플리를 5회 업로드 시 3번째만 성공, 4·5번째는 ghost
+
+확인된 ghost video_id (2026-04-13 YACHA 플리):
+- STVACAQE2Sg (4번째 업로드, 12:23:45)
+- Fs0Xih-YIQg (5번째 업로드, 21:11:39)
+- 실제 성공 video_id: sSo9TXRffLw (3번째, 11:21:00)
+
+체크리스트 (업로드 전):
+- upload_history.csv에서 동일 제목/파일의 최근 성공 업로드 여부 확인
+- 중복 업로드 방지 로직: 당일 동일 sched_type+title 업로드 기록 있으면 skip
+- thumbnails.set() 전 videos().list(part="id", id=video_id) 존재 여부 확인
+- pipeline 재실행 시 --dry-run 먼저 확인
+
+재발:
+- 2026-04-13 YACHA 플리 5회 중복 (초발): schedule.json 재실행 5회
+
+---
+
+## [E047] Shorts thumbnails.set() 즉시 실행 시 403 forbidden (2026-04-13)
+태그: #upload #youtube #shorts #thumbnail #403
+재발: (E029 재확인, 원인 규명)
+커밋: Phase5 진단 (수정 미구현)
+
+근본원인: YouTube Shorts 업로드 직후 thumbnails.set() 호출 시 403 forbidden. 업로드 성공 직후 YouTube 내부 처리가 완료되기 전 임시 제한. 시간 경과(수십분~수시간) 후 자동 해제.
+
+증상:
+- videos.insert() 성공 → thumbnails.set() 즉시 호출 → 403 forbidden
+- 동일 video_id에 수 시간 후 thumbnails.set() 재시도 → SUCCESS
+- master_pipeline.py L1187: Shorts는 sleep=0초 (플리/단곡은 5초) — 부족
+
+확인 (2026-04-13):
+- CS00SUzgJtE: 업로드 시 403 → 수 시간 후 수동 테스트 SUCCESS
+- 현재 retry: 5초 간격 3회 → 부족, 최소 30초+ 필요 (또는 별도 재시도 메커니즘)
+
+체크리스트 (Shorts 업로드 후):
+- thumbnails.set() 전 sleep 최소 30초 (현재 0초 → 부족)
+- 실패 시 재시도 간격: 30초 이상으로 확대
+- 또는 별도 "delayed thumbnail setter" 큐 구현 고려
+
+재발:
+- E029 (2026-04-10): Shorts 즉시 업로드 타이밍 실패 — 동일 근본원인 재확인
