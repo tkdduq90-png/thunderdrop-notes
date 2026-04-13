@@ -5,6 +5,11 @@
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
 
 ### 2026-04-13
+- Phase 5 미스터리 디버깅: 가설 6번 뒤집힘 (타이밍/shorts정책/video_id파싱/중복silent deletion/채널제재/스코프부족/response파싱), 원본 증거 소실로 검증 불가
+- 유력 가설 2개 남음: H(OAuth 스코프 youtube.upload만으로 비공개 영상 API 조회 불가) + I(_upload_one response 파싱 오류)
+- E050 신규 기록 (가설 과신 메타 에러, E038 재발)
+- 내일 재개 시작점: uploads playlist 열거 (docs/phase5_diagnosis.md 섹션 9.4)
+- Phase 6 착수 조건: 원인 확정 후, 다음 세션 권장 1순위: Step 2 uploads playlist 열거로 가설 H/I 확정
 - update_obsidian.py 리팩터: shutil.copy2 PermissionError 제거, LOCAL_PATH notes-repo/docs/ 직접 지정, subprocess utf-8 encoding, git diff 오탐 방지
 - CLAUDE.md 문서 경로 절대경로 명시, ErrorLog E043~E045 기록
 - thumbnail_service.py dead code 정리: YACHA_B_NEGATIVE_PROMPT/C_PARAMS 12줄 제거
@@ -91,5 +96,4 @@
 - **2026-04-11:** AB 테스터 썬네일 모드 선택 UI 개발 완료 - sheets/fallback_a/regenerate 3가지 모드 제공. thumb_a 빈값 경고 추가. Shorts skip 한글 방어 주석 보강.
 - **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
 - **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썬네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
-- **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트 없음 → v1 폴링으로 대체. Nano Banana = platformModels 목록 없음, model 문자열 직접 지정. init_image I2I → guidances.image_reference 방식으로 교체. closeup 베이스 이미지 경계 붙어있어 flood fill 누끼 불가 → Leonardo I2I 매번 새 이미지 생성으로 해결.
-- **2026-04-12:** 썬네일 벤치마킹 완료 - YACHA 5채널(PHONK Club 39.8만, CURSEDEVIL 55.5만, Phonk Rival 2.64만, GHOFNIX 30.6만, REXER MUSIC 3.81만) / 3CROW 5채널(Aim To Head Mix 88.4만, The Grand Sound 61.6만, Chill Beat 15.1만, 97Kickstvr 4.44만, SynthWaves
+- **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트
