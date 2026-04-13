@@ -400,6 +400,50 @@ beat_video.py (B-roll 경로)
 
 ---
 
+### [E043] shutil.copy2 src==dst PermissionError (2026-04-13)
+
+**증상**: `PermissionError: [WinError 32] 다른 프로세스가 파일을 사용 중`  
+`scripts/update_obsidian.py`, `save_and_push()` 내 `shutil.copy2()` 라인
+
+**원인**: `LOCAL_PATH`를 `notes-repo/docs/`에 직접 지정하도록 리팩터한 후,  
+`notes_file` 변수도 동일 경로를 가리키게 됨.  
+파일을 `open(LOCAL_PATH, "w")` 로 쓴 직후 `shutil.copy2(LOCAL_PATH, notes_file)` 호출 → src == dst → WinError 32
+
+**해결**: `shutil.copy2` 블록 전체 제거. `LOCAL_PATH`가 이미 `notes-repo/docs/`를 직접 가리키므로 복사 불필요
+
+**파일**: `scripts/update_obsidian.py`
+
+---
+
+### [E044] subprocess UnicodeDecodeError (cp949) (2026-04-13)
+
+**증상**: `UnicodeDecodeError: 'cp949' codec can't decode byte 0xed`  
+`update_obsidian.py` 실행 시 git 출력 처리 중 발생
+
+**원인**: Windows 환경에서 `subprocess.run(text=True)` 시 시스템 기본 인코딩(cp949)으로 stdout/stderr 디코딩.  
+git 출력에 이모지/한글 포함 시 cp949로 디코딩 불가
+
+**해결**: `text=True` 있는 `subprocess.run` 전부에 `encoding="utf-8", errors="replace"` 추가  
+(`git add`, `git commit`, `git push`, `git diff --cached --quiet` 4곳)
+
+**파일**: `scripts/update_obsidian.py`
+
+---
+
+### [E045] git commit 오탐 "nothing to commit" (2026-04-13)
+
+**증상**: `⚠️ git commit 실패:` 출력(빈 메시지). 실제 에러가 아닌데 실패 메시지 출력
+
+**원인**: Claude API가 노트 내용을 변경 없이 그대로 반환 → `git add` 후 staged diff 없음 →  
+`git commit` exit 1 → 스크립트가 실패로 판정
+
+**해결**: `git commit` 전에 `git diff --cached --quiet` 체크.  
+exit 0 (변경 없음) → `"변경사항 없음 - commit/push 생략"` 출력 후 graceful return
+
+**파일**: `scripts/update_obsidian.py`
+
+---
+
 # 신규 포맷 (E037~)
 
 독자: 다음 세션의 Claude. 작업 시작 전 작업 영역 태그로 grep.
