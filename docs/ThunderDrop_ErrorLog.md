@@ -14,6 +14,15 @@
 
 ---
 
+### [E024] AB 테스트 0/10 실패 — 해결 (2026-04-14)
+- **증상:** studio_ab_tester.py 실행 시 AB 테스트 등록 0/10 실패
+- **원인:** Chrome 기존 실행 프로필과 Selenium 프로필 충돌
+- **해결:** dedicated profile (`chrome_profile_yacha_ab`) + `_check_chrome_running()` 감지로 해결. 2026-04-14 AB 테스터 2/2 성공으로 작동 증명.
+- **파일:** `scripts/studio_ab_tester.py`
+- **재발 여부:** ❌ (근본 해결)
+
+---
+
 ### [E001] Docker suno-api hCaptcha 실패
 - **증상:** Suno API 서버가 음원 생성 요청 거부
 - **원인:** Docker 환경에서 hCaptcha Enterprise 서버사이드 감지 → 렌더링 자체 차단
@@ -230,7 +239,6 @@
 
 | ID | 증상 | 추정 원인 | 상태 |
 |---|---|---|---|
-| E024 | AB 테스트 0/10 실패 케이스 | Chrome 프로필 충돌 (Chrome 열린 채 실행) | Chrome 닫고 재실행 필요 |
 | E_TODO | verify_upload.py 미제작 | 파이프라인이 자체 검증하는 구조 → 신뢰도 낮음 | 독립 스크립트 제작 필요 |
 
 ---
@@ -299,6 +307,8 @@
 3. **브랜치 switch 전 merge 누락** → 작업 내용 소실
 4. **Windows cp949 환경 이모지 출력** → 항상 `PYTHONUTF8=1` 또는 `sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')`
 5. **동일 pickle 파일 두 채널 공유** → 채널별 독립 토큰 필수
+6. **FFmpeg 필터 체인 재사용 시 입력 크기 변경 주의** → crop_prefix 같은 전처리 필터가 16:9 전제로 설계됐는데 9:16 입력을 받으면 의도치 않은 대규모 crop 발생. 입력 해상도 변경 시 모든 필터 체인 재검토 필수.
+7. **YouTube API 200 OK ≠ 실제 반영** → thumbnails.set() Shorts, videos.insert 중복 콘텐츠 모두 200 OK 반환하면서 서버에서 무음 거부. 반드시 후속 videos.list() 또는 snippet.thumbnails 조회로 실제 반영 검증 필수.
 
 ---
 
@@ -574,7 +584,7 @@ exit 0 (변경 없음) → `"변경사항 없음 - commit/push 생략"` 출력 �
 
 ---
 
-## [E046] YouTube 중복 콘텐츠 무음 삭제 — ghost video_id (2026-04-13)
+## [E046] YouTube 중복 콘텐츠 무음 삭제 (2026-04-13, 04-14 확대)
 태그: #upload #youtube #duplicate #ghost #playlist
 재발: 1회 (초발)
 커밋: Phase5 진단 (수정 미구현)
@@ -584,12 +594,27 @@ exit 0 (변경 없음) → `"변경사항 없음 - commit/push 생략"` 출력 �
 증상:
 - videos.insert() 성공 → 로그에 video_id 기록 → thumbnails.set() 3회 retry 전부 404
 - YouTube Studio에서 해당 video_id 조회 불가
-- 같은 날 동일 플리를 5회 업로드 시 3번째만 성공, 4·5번째는 ghost
+- YACHA 4/13 20건 업로드 전부 ghost. 4/10~ 모든 업로드 ghost
+- uploads playlist 36건 중 4/10 이후 영상 0건
+- 4/13 동일 schedule.json 4~5회 재실행이 트리거 추정
 
 확인된 ghost video_id (2026-04-13 YACHA 플리):
 - STVACAQE2Sg (4번째 업로드, 12:23:45)
 - Fs0Xih-YIQg (5번째 업로드, 21:11:39)
 - 실제 성공 video_id: sSo9TXRffLw (3번째, 11:21:00)
+
+간접 증거:
+- 3CROW 4/14 5건 (새 오디오 + 새 schedule) → 5/5 ghost 없음, 정상
+- 대조군 정상 작동 확인
+
+임시 조치:
+- YACHA 업로드 전 새 Suno 음원 확인 후에만 진행
+- 동일 schedule 반복 실행 금지
+
+Phase 6 수정 예정:
+- 중복 업로드 방지 (upload_history.csv 기반 skip)
+- 업로드 후 videos().list() 즉시 존재 확인
+- ghost 감지 시 경고 + Sheets 미기록
 
 체크리스트 (업로드 전):
 - upload_history.csv에서 동일 제목/파일의 최근 성공 업로드 여부 확인
@@ -599,6 +624,8 @@ exit 0 (변경 없음) → `"변경사항 없음 - commit/push 생략"` 출력 �
 
 재발:
 - 2026-04-13 YACHA 플리 5회 중복 (초발): schedule.json 재실행 5회
+
+관련: phase5_diagnosis.md §9.5
 
 ---
 
@@ -652,3 +679,35 @@ exit 0 (변경 없음) → `"변경사항 없음 - commit/push 생략"` 출력 �
 - 2026-04-13 Phase 5 미스터리 디버깅 (초발)
 
 관련: E038 (Mock 단위 테스트 과신), E039 (부분 성공 판정)
+
+---
+
+## [E048] Shorts 썸네일 API 미반영 — 해결 (2026-04-14)
+태그: #upload #youtube #shorts #thumbnail #api
+재발: ❌ (API 포기, 전략 변경으로 근본 해결)
+커밋: 4abf55f, 4718a1f, f49bf1d
+
+근본원인: thumbnails().set() Shorts 호출 시 200 OK 반환하지만 Studio 피드/목록/상세에서 첫 프레임만 표시됨. 커스텀 썸네일 반영 안 됨. Google Issue Tracker #381127084 케이스.
+
+증상:
+- 16:9 (1280×720) 썸네일 → 반영 안 됨
+- 9:16 (768×1344) 썸네일 API 업로드 → 여전히 반영 안 됨
+- Studio 상세 페이지에 "YouTube 모바일 앱에서 썸네일을 변경할 수 있습니다" 안내
+- API 경로 자체가 Shorts에 대해 사실상 무력화
+
+해결 전략: API 포기, 영상 첫 프레임을 썸네일 역할로 활용
+1. Leonardo 768×1344 (9:16) 생성 — 썸네일 = 영상 배경 동일 이미지
+2. beat_video.py crop_prefix 제거 — 원본 전체가 영상 첫 프레임에 표시 (24.6% → 96.2%)
+3. master_pipeline.py _upload_one() Shorts 썸네일 API 호출 스킵
+4. 결과: 영상 첫 프레임 = Leonardo 이미지 = 피드/목록 썸네일
+
+검증: 라이브 테스트 YMiKD1p0kl0 Studio 육안 확인 통과.
+
+파일:
+- thumbnail_builder.py _leonardo_generate_one, generate_crow_thumbnail, generate_thumbnail_variants
+- beat_video.py _build_dynamic_zoompan, _static_zoompan crop_prefix
+- master_pipeline.py _upload_one
+
+참고 링크:
+- https://issuetracker.google.com/issues/381127084
+- https://issuetracker.google.com/issues/391129953

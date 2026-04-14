@@ -1,8 +1,26 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-13*
+*최종 업데이트: 2026-04-14*
 
 ## 📍 최근 세션
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
+
+### 2026-04-14
+- AB 테스터 2/2 성공 — E024 "0/10 실패" 해결 (dedicated profile 작동 증명)
+- Phase 5 §9.5: YACHA 4/10~ 전면 ghost 확정 — E046 중복 콘텐츠 무음 삭제
+  - uploads playlist 36건 중 4/10 이후 영상 0건
+  - videos().insert() 200 OK 반환하되 YouTube가 무음 삭제
+  - 4/13 동일 schedule.json 4~5회 재실행이 트리거 추정
+- Phase 5 §10~13: Shorts 썸네일 9:16 전면 재설계
+  - 문제: 16:9 썸네일이 Shorts에 반영 안 됨 (Google Issue #381127084 케이스)
+  - 해결: Leonardo 768×1344 생성, beat_video crop_prefix 제거, 썸네일 API 스킵
+  - 영상 첫 프레임 = Leonardo 이미지 = 피드 썸네일 역할
+  - 라이브 검증 완료 (YMiKD1p0kl0 Studio 육안 확인)
+- SEO/카니발라이제이션 정리 7건
+  - YACHA: night drive/car music 키워드 제거, villain arc → beast mode, 세계관 단어 제거
+  - 3CROW: gym/workout 키워드 제거 (config tags + hashtags 폴백)
+- 테스트 스크립트 3개 신규 (scripts/test_shorts_*.py)
+- 설계 문서 신규 (docs/shorts_thumbnail_redesign.md)
+- 11 commits pushed to origin/master
 
 ### 2026-04-13
 - Phase 5 미스터리 디버깅: 가설 6번 뒤집힘 (타이밍/shorts정책/video_id파싱/중복silent deletion/채널제재/스코프부족/response파싱), 원본 증거 소실로 검증 불가
@@ -27,7 +45,7 @@
 ## 🔄 피드백 루프 단계별 현황
 | 단계 | 내용 | 상태 |
 |------|------|------|
-| STEP 1 | SEO · 컨셉 세팅 · AB테스트 | ⚠️ 부분 완료 |
+| STEP 1 | SEO · 컨셉 세팅 · AB테스트 | ✅ 완료 |
 | STEP 2 | 업로드 (플리/단곡/Shorts) | ✅ 완료 |
 | STEP 3 | 데이터 수집 → Sheets | ✅ 완료 |
 | STEP 4 | 원인 분석 (dashboard) | ⚠️ 수동 단계 |
@@ -49,6 +67,7 @@
 - 고정태그: mega bass boosted, occasional vocals, vocal stabs on drops, subwoofer shaking, extended mix, 3 minutes, do not fade early
 - 토큰: 3Crow\youtube_token_3crow.pickle
 - 오디오 경로: 3Crow\audio
+- Shorts 썸네일: 9:16 Leonardo 768×1344 전용 생성, thumbnails.set() API 스킵, 영상 첫 프레임 = 피드 썸네일
 
 ### FocusArchitect
 - 오디오 경로: FocusArchitect\audio
@@ -69,6 +88,10 @@
 - master_pipeline.py: --dry-run 플래그 추가, 플리/단곡/숏츠 Title A/B/C 생성 연결 완료
 
 ### 최근 완료 ✅
+- **2026-04-14:** Shorts 9:16 재설계 완료. Leonardo 768×1344 생성, beat_video crop_prefix 제거, thumbnails.set() Shorts 스킵. 첫 프레임 = Leonardo 이미지 = 피드 썸네일. 라이브 검증 통과 (YMiKD1p0kl0).
+- **2026-04-14:** Phase 5 §9.5 — YACHA 4/10~ 전면 ghost 확정. E046 확대. uploads playlist 36건 중 4/10 이후 0건. videos.insert 200 OK 후 무음 삭제.
+- **2026-04-14:** AB 테스터 2/2 성공. E024 해결. dedicated profile 작동 증명.
+- **2026-04-14:** SEO/카니발라이제이션 정리 7건. YACHA drive 키워드/세계관 단어 제거, 3CROW gym 키워드 제거.
 - suno_bot.py base_dir 채널별 분리 (YACHA\audio, 3Crow\audio, FocusArchitect\audio)
 - YACHA_DIR 경로 야차→YACHA 통일
 - dev 브랜치 복구: neon/shorts/B-C variants + mood word 컨텍스트 YACHA/3CROW 분리
@@ -97,3 +120,19 @@
 - **2026-04-11:** studio_ab_tester.py regenerate 모드 구현 완료 - thumbnail_builder.generate_thumbnail_variants() 연동. sys.path 루트 추가로 import 해결. 실패 시 fallback 제거→스킵. shutil 상단 이동. Leonardo 크레딧 경고 추가.
 - **2026-04-11:** _channel_post_fx YACHA/3CROW 효과 전체 제거 (chromashift, hue oscillation, tblend, rgbashift). _fallback_video hwaccel_output_format 잔존(저위험). _channel_feedback no-op 미구현. 3CROW 썬네일 텍스트 원인 규명: init_image+A프롬프트 no text 누락.
 - **2026-04-12:** Leonardo v2 API 발견사항 정리 - WIDTH 1472 → v2 validation 에러 (허용값: 672/768/832/864/896/1024/1152/1184/1248/1344). imagePrompts 배열에 객체 불가, 문자열만 허용. v2 폴링 엔드포인트
+
+## 📍 현재 상태 — 다음 세션 권장 우선순위
+
+1. **Phase 6 E046 방어 로직 구현** (1~2 세션)
+   - 중복 업로드 방지 (upload_history 기반 skip)
+   - 업로드 후 videos().list 즉시 존재 확인
+   - YACHA 신규 음원으로 ghost 재검증
+2. **Analytics zeros 문제 재확인** (30분)
+   - 어제 3CROW 5건 recording zeros 현상
+   - 24h 경과 후 데이터 차는지 확인
+   - 아니면 audienceRetentionReports API 실제 동작 조사
+3. **Phase 3 3CROW/FocusArchitect thumbnail_service 이전** (2~3 세션)
+   - Phase 1/2/4 패턴 재적용
+   - keyword_hints 어댑터 확장 필수
+4. (장기) verify_upload.py 독립 검증 스크립트
+5. (장기) B-keyword 신기능 도입 논의
