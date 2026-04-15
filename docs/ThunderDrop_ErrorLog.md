@@ -711,3 +711,31 @@ Phase 6 수정 예정:
 참고 링크:
 - https://issuetracker.google.com/issues/381127084
 - https://issuetracker.google.com/issues/391129953
+
+---
+
+### [E051] Leonardo API 잔액 부족 시 모든 썸네일 실패 → Shorts 0개 생성 (2026-04-15)
+- **증상**: `⚠️ Leonardo v2 실패: 'list' object has no attribute 'get'`
+  - A/B/C 모든 variant 동일 에러
+  - ThumbnailSet success=False
+  - Shorts 영상: `expected str, bytes or os.PathLike object, not NoneType` (None 폴백 부재)
+- **원인**: Leonardo API 잔액 0일 때 에러 응답이 list 형태로 반환되는데 코드는 dict 가정하고 `.get()` 호출
+- **일시 해결**: API 충전
+- **항구 해결 (별건)**: Leonardo 응답 list/dict 양쪽 처리, Shorts None 폴백 추가
+- **파일**: `thumbnail_service.py`, `master_pipeline.py` build_shorts
+
+---
+
+### [E052] _log_to_sheets 키 불일치 (tracks vs tracks_meta) (2026-04-15)
+- **증상**: build_video result dict에 `tracks_meta` 키만 존재하는데 build_single_video, build_shorts는 `playlist_sched.get("tracks", [])` 로 읽음 → 빈 리스트 → 매칭 실패 → 폴백 "gym phonk, workout" 출력
+- **해결**: build_video result dict에 `"tracks": _tracks_meta` 추가 (양방향 호환)
+- **커밋**: c992257
+- **파일**: `master_pipeline.py` build_video, build_single_video, build_shorts
+
+---
+
+### [E053] generate_dashboard row 인덱스 22컬럼 미반영 (2026-04-15)
+- **증상**: dashboard.py L96에서 `row[12]`를 thumb_text로 읽음. 옵션 3 작업으로 `row[12]` = thumb_prompt_B로 변경됨. dashboard가 thumb_text 자리에 prompt_B 값 표시
+- **해결**: `row[12]` → `row[14]` (thumb_text 위치 조정)
+- **커밋**: acf05dd 포함
+- **파일**: `scripts/generate_dashboard.py`

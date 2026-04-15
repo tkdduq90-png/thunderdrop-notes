@@ -1,8 +1,35 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-14*
+*최종 업데이트: 2026-04-15*
 
 ## 📍 최근 세션
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
+
+### 2026-04-15
+- **History 탭 트랙 단위 로깅 구조 전면 개편 (Phase 4-history)**
+  - 이전: 플리 1회 = 트랙 20 row만, 영상 자체 row 없음. 트랙 row가 영상 메타 중복 보유. 음원_프롬프트_전체 첫 트랙만 저장, 가사/BPM 빈값
+  - 새 구조: video_type 4종 분리 (track/playlist/single/shorts). 트랙 row는 음원 메타만, 영상 row는 영상 메타만. 책임 분리 매트릭스 적용
+  - prompt_builder: schedule[].tracks 배열에 트랙별 (title/suno_prompt/lyrics/bpm) 누적
+  - master_pipeline _log_to_sheets: playlist는 log_batch(track row N개) + log_song(playlist row 1개) 분리 호출, 독립 try-except로 부분 실패 격리
+  - sheets_logger HEADERS 22컬럼 확정. lyrics/full_prompt truncation 1000/2000자 증설 (기존 500자 가사 짤림 해결)
+- **커스텀 곡 수 옵션 신설 (모드 1)**
+  - 구성: 1=10곡 / 2=20곡 / 3=커스텀(2~30) 메뉴 추가
+  - songs_per_mix 파라미터 master_pipeline → run_channel → _step1 → step1_generate_prompts 전파
+  - Shorts 출력 항상 2개 통일 (n=min(2, len(wav_files)))
+  - 빠른 검증 사이클 가능 (2곡 모드 약 17분)
+- **YACHA thumb_prompt A/B/C 별도 컬럼 저장 (옵션 3)**
+  - 기존: 의도적 빈 문자열 ("Phase 4/5에서 별도 작업" 주석 명시)
+  - 진단 결과: A=정적 dict, B=Claude Haiku 동적 생성, C=YACHA_C_VARIANTS 순환. 셋 다 의미 있는 prompt
+  - 구현: variants_dict에 A_prompt/B_prompt/C_prompt 키 추가 (4-tuple 반환 구조 유지)
+  - thumbnail_service _build_variant_a_raw에서 use_prompt를 ThumbnailResult.prompt에 저장 (성공/실패 경로 모두)
+  - sheets_logger HEADERS thumb_prompt → thumb_prompt_A/B/C 분리
+- **회귀 방지 작업**
+  - generate_dashboard.py row 인덱스 22컬럼 스키마 보정 (row[12] thumb_text → row[14], Critical fix)
+  - test_sheets_logger.py 신설 — log_song/log_batch 22컬럼 정합성 자동 검증
+  - test_thumbnail_adapter.py b_prompt/c_prompt 헬퍼 + 신규 케이스 추가, 19/19 PASS 유지
+- **마무리 검증**
+  - 2곡 모드 실 테스트 통과: 트랙 분리/통합 row 신설/Single Shorts 트랙 매칭/thumb_prompt A/B/C 분리 모두 OK
+  - 5커밋 분리 (c360677, e717951, c992257, d117e69, acf05dd)
+  - Leonardo API 잔액 부족 시 모든 썸네일 실패 → Shorts 0개 생성 1회 발생 (충전 후 정상화). 디펜시브 처리는 별건
 
 ### 2026-04-14
 - AB 테스터 2/2 성공 — E024 "0/10 실패" 해결 (dedicated profile 작동 증명)
@@ -47,7 +74,7 @@
 |------|------|------|
 | STEP 1 | SEO · 컨셉 세팅 · AB테스트 | ✅ 완료 |
 | STEP 2 | 업로드 (플리/단곡/Shorts) | ✅ 완료 |
-| STEP 3 | 데이터 수집 → Sheets | ✅ 완료 |
+| STEP 3 | 데이터 수집 → Sheets | ✅ 완료 (트랙 단위 + 영상 단위 분리 기록) |
 | STEP 4 | 원인 분석 (dashboard) | ⚠️ 수동 단계 |
 | STEP 5 | 자동 반영 | ❌ 미착수 |
 
@@ -88,6 +115,7 @@
 - master_pipeline.py: --dry-run 플래그 추가, 플리/단곡/숏츠 Title A/B/C 생성 연결 완료
 
 ### 최근 완료 ✅
+- **2026-04-15:** History 탭 22컬럼 스키마 확정. video_type 4종(track/playlist/single/shorts) 책임 분리. YACHA thumb_prompt A/B/C 분리 저장. 커스텀 곡 수(2~30) 메뉴 신설. Shorts 항상 2개 출력. truncation 증설(가사 2000/프롬프트 1000자). test_sheets_logger.py 신설. generate_dashboard row 인덱스 22컬럼 보정. 5커밋 분리(c360677, e717951, c992257, d117e69, acf05dd).
 - **2026-04-14:** Shorts 9:16 재설계 완료. Leonardo 768×1344 생성, beat_video crop_prefix 제거, thumbnails.set() Shorts 스킵. 첫 프레임 = Leonardo 이미지 = 피드 썸네일. 라이브 검증 통과 (YMiKD1p0kl0).
 - **2026-04-14:** Phase 5 §9.5 — YACHA 4/10~ 전면 ghost 확정. E046 확대. uploads playlist 36건 중 4/10 이후 0건. videos.insert 200 OK 후 무음 삭제.
 - **2026-04-14:** AB 테스터 2/2 성공. E024 해결. dedicated profile 작동 증명.
@@ -123,6 +151,12 @@
 
 ## 📍 현재 상태 — 다음 세션 권장 우선순위
 
+**0순위 (즉시): 옵션 3 후속 검토**
+- B/C variant prompt 데이터 1주일 누적 후 분석
+- 어떤 variant가 CTR/시청지속에 영향 큰지 매핑
+- AB tester 승자 결정 → 승자 variant prompt를 별도 분석 컬럼에 강조 표시 검토
+- 예상 소요: 데이터 누적 후 30분
+
 1. **Phase 6 E046 방어 로직 구현** (1~2 세션)
    - 중복 업로드 방지 (upload_history 기반 skip)
    - 업로드 후 videos().list 즉시 존재 확인
@@ -136,3 +170,9 @@
    - keyword_hints 어댑터 확장 필수
 4. (장기) verify_upload.py 독립 검증 스크립트
 5. (장기) B-keyword 신기능 도입 논의
+
+**6순위 (장기): 디펜시브 코딩 강화**
+- Leonardo API 실패 시 Shorts None 폴백 처리 (현재 wav 파일명 NoneType 에러)
+- Sheets API rate limit 시 재시도 로직
+- AB 테스터 Chrome 충돌 자동 회피
+- 예상 소요: 1 세션
