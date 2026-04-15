@@ -30,6 +30,17 @@
   - 2곡 모드 실 테스트 통과: 트랙 분리/통합 row 신설/Single Shorts 트랙 매칭/thumb_prompt A/B/C 분리 모두 OK
   - 5커밋 분리 (c360677, e717951, c992257, d117e69, acf05dd)
   - Leonardo API 잔액 부족 시 모든 썸네일 실패 → Shorts 0개 생성 1회 발생 (충전 후 정상화). 디펜시브 처리는 별건
+- **YACHA A 썸네일 텍스트 시스템 본 파이프라인 통합 (Phase 3~4)**
+  - Phase 3: A variant COMBO 9조합 generate_variant 연결
+  - Phase 4: Claude Sonnet 동적 텍스트 생성 (_generate_a_text)
+  - 날짜 서브폴더 {YYYYMMDD} 추가, C variant 텍스트 오버레이 skip
+  - BEAST 고정 버그: Haiku→Sonnet 모델 업그레이드, 블랙리스트 {DARK,GRIND,BEAST,IRON}, 프롬프트 5번 반복 조정
+  - 핵심 학습: LLM 다양성 한계 — 트랙명만으론 수렴 (5번 시도 모두 BEAST 고정). 진정한 원인 = 입력 데이터 부족
+  - 해결: Suno 태그 + 가사 첫 줄 입력 확장 → 5/5 고유 캐치프레이즈 달성 (FORGE PAIN/RISE FURY/BREAK CHAINS/CRUSH BONES/RAGE FUEL)
+- **Leonardo API list 응답 방어 (디펜시브 코딩)**
+  - _leonardo_i2i_v2() 3곳에 isinstance(body, list) 가드 추가 (e0e8e5a)
+  - E051 동일 근본원인 일괄 해결
+- **세션 커밋 합계**: 8커밋 (7a3be3f, f78698e, c89e3b8, 3a6dc4d, acf05dd, b975990, e0e8e5a + history 5건)
 
 ### 2026-04-14
 - AB 테스터 2/2 성공 — E024 "0/10 실패" 해결 (dedicated profile 작동 증명)
@@ -76,9 +87,9 @@
 | STEP 2 | 업로드 (플리/단곡/Shorts) | ✅ 완료 |
 | STEP 3 | 데이터 수집 → Sheets | ✅ 완료 (트랙 단위 + 영상 단위 분리 기록) |
 | STEP 4 | 원인 분석 (dashboard) | ⚠️ 수동 단계 |
-| STEP 5 | 자동 반영 | ❌ 미착수 |
+| STEP 5 | 자동 반영 | ⚠️ 부분 착수 (A 텍스트 동적 생성 완료) |
 
-**현재 병목:** STEP 5 미착수
+**현재 병목:** STEP 5 나머지 (B/C 자동 반영, 승자 피드백 루프)
 
 ## 📺 채널 현황
 ### YACHA
@@ -151,28 +162,24 @@
 
 ## 📍 현재 상태 — 다음 세션 권장 우선순위
 
-**0순위 (즉시): 옵션 3 후속 검토**
-- B/C variant prompt 데이터 1주일 누적 후 분석
-- 어떤 variant가 CTR/시청지속에 영향 큰지 매핑
-- AB tester 승자 결정 → 승자 variant prompt를 별도 분석 컬럼에 강조 표시 검토
-- 예상 소요: 데이터 누적 후 30분
-
-1. **Phase 6 E046 방어 로직 구현** (1~2 세션)
+1. **Hook 제목 0개 이슈 조사** (30분)
+   - seo_scraper.py generate_hook_title() 호출 시 빈 리스트 반환 케이스
+   - Single/Shorts 제목 생성 실패 → 폴백 사용 빈도 확인
+2. **Phase 6 E046 방어 로직 구현** (1~2 세션)
    - 중복 업로드 방지 (upload_history 기반 skip)
    - 업로드 후 videos().list 즉시 존재 확인
    - YACHA 신규 음원으로 ghost 재검증
-2. **Analytics zeros 문제 재확인** (30분)
-   - 어제 3CROW 5건 recording zeros 현상
-   - 24h 경과 후 데이터 차는지 확인
-   - 아니면 audienceRetentionReports API 실제 동작 조사
 3. **Phase 3 3CROW/FocusArchitect thumbnail_service 이전** (2~3 세션)
    - Phase 1/2/4 패턴 재적용
    - keyword_hints 어댑터 확장 필수
-4. (장기) verify_upload.py 독립 검증 스크립트
-5. (장기) B-keyword 신기능 도입 논의
+4. **옵션 3 후속 검토** (데이터 누적 후 30분)
+   - B/C variant prompt 데이터 1주일 누적 후 분석
+   - AB tester 승자 결정 → 승자 variant prompt 강조 표시 검토
+5. (장기) verify_upload.py 독립 검증 스크립트
+6. (장기) B-keyword 신기능 도입 논의
 
-**6순위 (장기): 디펜시브 코딩 강화**
-- Leonardo API 실패 시 Shorts None 폴백 처리 (현재 wav 파일명 NoneType 에러)
-- Sheets API rate limit 시 재시도 로직
-- AB 테스터 Chrome 충돌 자동 회피
-- 예상 소요: 1 세션
+**잔존 이슈 (낮은 우선순위)**
+- raw_path 비대칭: A variant는 raw_calc 계산, B/C는 raw_path 직접 전달. 향후 정리 대상.
+- prompt injection 잔존: generate_variant 호출 시 text 파라미터가 프롬프트에 삽입되는 구조. 현재 내부 데이터만 사용하므로 실질 위험 없으나 인지 필요.
+- Leonardo API 실패 시 Shorts None 폴백: E051 가드 추가 완료, 나머지 Shorts None 경로는 별건.
+- Sheets API rate limit 재시도 / AB 테스터 Chrome 충돌 자동 회피

@@ -739,3 +739,14 @@ Phase 6 수정 예정:
 - **해결**: `row[12]` → `row[14]` (thumb_text 위치 조정)
 - **커밋**: acf05dd 포함
 - **파일**: `scripts/generate_dashboard.py`
+
+---
+
+### [E054] Leonardo v2 API list 응답 → 'list' has no attribute 'get' (2026-04-15)
+- **발견**: 2026-04-14 실테스트, Shorts B variant (file_idx=202). 같은 실행에서 file_idx=200, 201은 성공.
+- **증상**: `⚠️ Leonardo v2 실패: 'list' object has no attribute 'get'`
+- **원인**: Leonardo v2 API가 quota/rate limit 시 HTTP 200 + list body 반환 (`[{"error": "..."}]`). 코드는 dict 가정하고 `.get()` 호출 → AttributeError.
+- **영향**: 제한적 (A/C variant fallback 작동, 영상 업로드 무영향)
+- **해결**: e0e8e5a — `_upload_init_image` L186, `_leonardo_i2i_v2` 생성 L253, 폴링 L269에 `isinstance(body, list)` 가드 3곳 추가. 생성/업로드는 RuntimeError, 폴링은 continue (range(30) 보호).
+- **파일**: `thumbnail_service.py`
+- **패턴**: E051과 동일 근본원인 (API 200 OK + 비정상 body 형태)
