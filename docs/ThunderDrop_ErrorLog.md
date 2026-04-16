@@ -750,3 +750,58 @@ Phase 6 수정 예정:
 - **해결**: e0e8e5a — `_upload_init_image` L186, `_leonardo_i2i_v2` 생성 L253, 폴링 L269에 `isinstance(body, list)` 가드 3곳 추가. 생성/업로드는 RuntimeError, 폴링은 continue (range(30) 보호).
 - **파일**: `thumbnail_service.py`
 - **패턴**: E051과 동일 근본원인 (API 200 OK + 비정상 body 형태)
+
+### [E055] AB 테스터 5쌍 동일 제목 영상 등록 실패 (2026-04-16)
+- **발견**: 2026-04-16 세션 시작 시, studio_ab_tester.py에서 1eXOsJUB6Qo 미등록 발견
+- **증상**: Sheets Analytics_Manual에 동일 제목 영상 5쌍(10건) 존재. 1eXOsJUB6Qo가 ab_registered=TRUE로 오마킹되어 목록 제외
+- **원인**: 4/13 mode 2/3 반복 실행으로 동일 schedule이 재처리됨. 5쌍 중복: HyS5/CB3S/sSo9/STVA/Fs0X + iXpz/JkcG/6ckA/VSLC/XNpI
+- **해결**: Sheets 10건 행 삭제 + YouTube 비공개 영상 삭제 + 1eXOsJUB6Qo ab_registered 비우기 + AB 테스터 재실행 → 정상 등록
+- **파일**: `scripts/studio_ab_tester.py`, Sheets Analytics_Manual
+- **재발 방지**: Phase A (mode 2/3 confirm) 도입으로 의도하지 않은 schedule 재실행 차단 (f07aa2f)
+
+### [E056] 2xD9gTGN4GU video_type 오분류 의심 — 정상 확정 (2026-04-16)
+- **발견**: 2026-04-16 디버깅 중 2xD9gTGN4GU가 단곡인데 video_type=playlist로 표기
+- **증상**: video_type 필드값 불일치 의심
+- **원인**: 조사 결과 실제로 2곡 합본 playlist. video_type=playlist는 곡 수 무관, "합본"을 의미
+- **해결**: 코드 변경 없음 (의도된 동작 확정). 진단 단계 마무리
+- **파일**: `prompt_builder.py` (build_video logic)
+- **패턴**: 단곡=1곡 영상, playlist=합본(2곡 이상)
+
+### [E057] mode 1 schedule 덮어쓰기로 복구 불가 (2026-04-16)
+- **발견**: Phase A/B 디버깅 시 1차 실행 schedule이 2차 실행으로 덮어써져 사후 분석 불가
+- **증상**: Leonardo 실패 시점, 제목 생성 결과 등 이전 schedule 데이터 추적 불가
+- **원인**: master_pipeline.py step3 json.dump가 기존 schedule_file을 무조건 덮어씀. 백업 메커니즘 부재
+- **해결**: Phase E-8 — schedule 자동 백업 시스템 도입 (ea8fe01). step3 json.dump 직전 schedule_backups/ 폴더로 shutil.copy2. 파일명 upload_schedule_{channel_key}_{YYYYMMDD_HHMMSS}.bak.json. 30일 이상 mtime 기준 자동 삭제. 백업 실패 시 logger.warning + 파이프라인 계속
+- **파일**: `master_pipeline.py` L701~L722 (step3_create_videos_with_groups)
+
+### [E058] print 분산으로 파일 로그 부재 (2026-04-16)
+- **발견**: 2026-04-16 Phase E 계획 시 전수 조사
+- **증상**: 8개 모듈에서 print() 사용으로 운영 정보가 콘솔에만 출력. 파이프라인 실행 후 stdout 캡처 안 했으면 정보 손실
+- **원인**: 각 모듈에서 print 사용 + master_pipeline에 logging.xxx 혼재. file logging 핸들러 부재. 모듈명 식별 불가
+- **해결**: Phase E-1~E-7 — 8개 핵심 모듈 named logger 전환. `logger = logging.getLogger(__name__)` + print → logger.info/warning/error 의도별 분류. CLI 출력(메뉴/진행률/dry-run)은 print 유지. 로그 파일 logs/{channel}_{YYYY-MM-DD}.log
+- **파일**: thumbnail_service, seo_scraper, prompt_builder, sheets_logger, beat_video, suno_bot, master_pipeline
+- **커밋**: f403249, 61351dd, 5d66de0, e886a58, 08dfbe3, ca33bae, 7793e93
+
+### [E059] suno_bot subprocess logger 합류 불가 (2026-04-16)
+- **발견**: Phase E-6 작업 중 suno_bot.py 로그가 master_pipeline 파일에 미기록 발견
+- **증상**: suno_bot.py 로그 출력이 stdout으로만 가고 파일에 기록 안 됨
+- **원인**: master_pipeline이 subprocess.Popen으로 suno_bot.py를 별도 프로세스 실행. 별도 프로세스는 부모 logging 핸들러 상속 불가
+- **해결**: Phase E-6 — suno_bot.py __main__ 블록 내 자체 basicConfig(force=True) 추가. FileHandler(logs/{날짜}_suno.log) + StreamHandler
+- **파일**: `suno_bot.py` L276~L291
+- **커밋**: ca33bae
+- **패턴**: subprocess로 실행되는 모듈은 자체 basicConfig 필요 (예: analytics_collector 동일 패턴 적용 검토)
+
+### [E060] except 블록 traceback 부재 (2026-04-16)
+- **발견**: Phase E 통합 코드리뷰 (AST 분석) 시 9곳 누락 검출
+- **증상**: except 블록 내 logger.error/warning에 exc_info=True 누락. 실패 시 메시지만 기록되고 stack trace 부재 → 근본 원인 분석 불가
+- **원인**: Phase E 변환 시 일부 except에 exc_info=True 미적용. HIGH 2건 (L1238 채널 검증, L1535 체크포인트) + MEDIUM 7건 (L504/L633/L722/L777/L1145/L1302 master + seo_scraper L271)
+- **해결**: Phase E-9 (6c09c3f) — 9곳 전부 exc_info=True 추가. AST 전수 검증으로 except 내 100% 커버리지 확인. exc_info 누적: master 11→20, seo 8→9
+- **파일**: `master_pipeline.py`, `seo_scraper.py`
+
+### [E061] dry-run 단곡C/숏츠B,C "(생성 실패)" — 외부 요인 확정 (2026-04-16)
+- **발견**: Phase E 완료 후 dry-run 3회 검증 실행 시 비결정론적 실패
+- **증상**: _dry_run_titles 실행 시 단곡 C, 숏츠 B/C에서 "(생성 실패)" 메시지. 3차에서 단곡 B도 실패
+- **원인**: Claude API rate limit (Anthropic side throttling). 코드 회귀 아님 (Phase E 변경 무관). 운영 mode 1에서는 정상 동작 (요청 간 시간 여유 있음)
+- **해결**: 정상 동작 확정 (외부 요인). 코드 수정 불필요
+- **파일**: `prompt_builder.py` (fallback 로직), `master_pipeline.py` (_dry_run_titles)
+- **백로그**: dry-run 단독 호출 시 basicConfig 미설정으로 logger 출력 미흐름 → dry-run 진입 시 가벼운 basicConfig 추가 검토
