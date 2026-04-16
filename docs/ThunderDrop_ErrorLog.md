@@ -805,3 +805,21 @@ Phase 6 수정 예정:
 - **해결**: 정상 동작 확정 (외부 요인). 코드 수정 불필요
 - **파일**: `prompt_builder.py` (fallback 로직), `master_pipeline.py` (_dry_run_titles)
 - **백로그**: dry-run 단독 호출 시 basicConfig 미설정으로 logger 출력 미흐름 → dry-run 진입 시 가벼운 basicConfig 추가 검토
+
+### [E062] studio_ab_tester regenerate YACHA silent 실패 (2026-04-16)
+태그: #ab-tester #regenerate #yacha #레거시경로
+- **발견**: 2026-04-16 세션, YACHA 2건(rYUKCfjkWkk, XqccuydKjoA) regenerate 모드
+- **증상**: "❌ Leonardo B 실패 / ❌ Leonardo C 실패" 만 출력. Leonardo 크레딧 충분. 원인 불명
+- **원인**: studio_ab_tester.py regenerate 모드가 레거시 `thumbnail_builder.generate_thumbnail_variants()` 만 호출. 이 함수의 VARIANT_B_SCENES / VARIANT_C_PROMPTS 에 YACHA 키 미등록 → B/C 항상 None 반환 → Leonardo 호출 자체 발생 안 함. Phase 1~4 마이그레이션에서 studio_ab_tester 경로 누락
+- **해결**: d836456 — channel_key=="yacha" 분기 추가, `build_and_adapt_yacha()` 호출. 3CROW/focusarchitect 기존 경로 유지
+- **파일**: `scripts/studio_ab_tester.py`
+- **체크리스트**: Phase 마이그레이션 시 master_pipeline 외 호출 진입점 grep 전수 (studio_ab_tester, dashboard, 일회성 스크립트 포함). YACHA 전용 경로가 build_and_adapt_yacha() 통하는지 검증
+
+### [E063] 영상 bg_image 텍스트 박힌 final 사용 — 5개 경로 (2026-04-16)
+태그: #영상배경 #썸네일혼용 #raw누출 #silent
+- **발견**: 2026-04-16 영상 배경 이미지 재감사 (docs/video_text_audit_2026-04-16.md)
+- **증상**: YACHA/3CROW 플리/단곡/Shorts 5개 경로 영상 배경에 PLAYLIST/HOOK/Phonk 타이포 등 텍스트 박혀있음. "영상 내부에 drawtext/drawbox 없음" 1차 감사로는 못 잡힘 — 영상 체인이 아니라 배경 이미지 소스가 원인
+- **원인**: master_pipeline.py가 영상 bg_image로 final(텍스트 박힌 버전) 사용. ThumbnailResult.raw_path 필드 이미 존재했으나 _variants_dict()에서 미노출. Shorts에서는 직접 raw 경로 추측했으나 3중 불일치(날짜 형식/서브폴더/파일명 패턴)로 raw 미존재 → fallback으로 final 사용
+- **해결**: 4c27d8b — (1) thumbnail_adapter._variants_dict()에 A_raw/B_raw/C_raw 키 추가 (2) generate_crow_thumbnail() 반환 4-tuple 확장 (3) master_pipeline playlist/single/shorts 3블록 bg_image raw→final→banner fallback 체인 (4) raw 미존재 시 logger.warning (5) Shorts raw_bg 경로 추측 로직 폐기
+- **파일**: `thumbnail_adapter.py`, `thumbnail_builder.py`, `master_pipeline.py`
+- **체크리스트**: "영상 배경 텍스트 없음" 검증은 drawtext grep으로 부족, bg_image 소스 역추적 필요. 파일 경로를 호출부에서 추측하는 방식 금지 (단일 소스 원칙 위반)

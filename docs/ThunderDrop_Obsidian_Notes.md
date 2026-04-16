@@ -17,6 +17,21 @@
   - AB 테스터 5쌍 동일 제목 영상: Sheets 행 삭제 + YouTube 비공개 삭제, 정상 등록
   - 2xD9gTGN4GU video_type 오분류: 실제 2곡 합본 playlist (버그 아님 확정)
   - Phase A/B schedule 덮어쓰기: Phase E-8 백업 시스템으로 해결
+- **E062 studio_ab_tester regenerate YACHA 경로 수정 (d836456, 미푸시)**
+  - 레거시 generate_thumbnail_variants() → build_and_adapt_yacha() 전환
+  - 진단: docs/phase5_diagnosis.md studio_ab_tester 섹션
+  - 3CROW/focusarchitect 기존 경로 유지
+- **E063 영상 bg_image raw 전환 5개 경로 (4c27d8b, 미푸시)**
+  - thumbnail_adapter._variants_dict() A_raw/B_raw/C_raw 키 추가
+  - generate_crow_thumbnail() 반환 3→4 tuple 확장 (raw_path)
+  - master_pipeline playlist/single/shorts 3블록 raw→final→banner fallback
+  - Shorts raw_bg 경로 추측 로직 폐기 (3중 불일치 해소)
+  - 감사: docs/video_text_audit_2026-04-16.md (1차 drawtext + 2차 bg_image 재감사)
+  - focusarchitect: 텍스트 오버레이 없음 확인 → 범위 제외
+- **📍 다음 세션 우선순위**
+  - 1순위: 풀파이프 자연 검증 결과 확인 (4c27d8b) — 영상 배경 텍스트 없음 + raw bg 경고 없음 → 미푸시 2건 푸시
+  - 2순위: studio_ab_tester regenerate 수동 검증 (d836456) — YACHA 1건 수동 실행
+  - 3순위: Phase 3 3CROW/FocusArchitect thumbnail_service 이전
 - **백로그 (다음 세션 작업 후보)**
   - pyflakes 미사용 import 정리 5파일 (master_pipeline/prompt_builder/sheets_logger/seo_scraper/beat_video)
   - scripts/test_shorts_916_live.py logging.xxx 28건 → named logger 통일 (LOW)
