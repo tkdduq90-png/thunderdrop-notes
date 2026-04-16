@@ -5,19 +5,25 @@
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
 
 ### 2026-04-16
-- **백로그 정리 및 기술부채 카탈로그화**
-  - pyflakes 미사용 import 5개 파일 (master_pipeline/prompt_builder/sheets_logger/seo_scraper/beat_video) 정리 대상 식별
-  - scripts/test_shorts_916_live.py logging 28건 root logger → named logger 통일 필요
-  - 로그 파일명 혼재 (master_pipeline vs suno_bot) → {YYYY-MM-DD}_{module}_{channel}.log 통합 제안
-  - _dry_run_titles 단독 호출 시 basicConfig 미설정 → logger 출력 부재 (디버깅 가시성 이슈)
-  - W1 upload_schedule.json dead write (W2 superset) → 제거 또는 _debug_dump.json 리네임 검토
-- **추가 기술부채 백로그 식별**
-  - prompt_builder fallback 가시성 (E034 후속)
-  - sheets_logger retry/rate limit 가시성
-  - AB 분석 시 A=B=C 케이스 식별/제외
-  - Leonardo 잔액 자동 모니터링
-  - audienceRetentionReports API 신뢰성 조사
-  - verify_upload.py 독립 검증 스크립트 (장기)
+- **Phase E 로깅 인프라 + schedule 백업 시스템 완성**
+  - Phase A: mode 2/3 schedule 재사용 confirm (f07aa2f) — 마지막 수정 시간/첫 항목 표시, 기본값 N
+  - Phase C: Leonardo B/C fallback 확장 (f75a7d2) — B/C 둘 다 실패 시 raw_path A로 fallback, build_video/build_single_video 양쪽 적용
+  - Phase D: single 썸네일 fallback (a2e23d9) — single 실패 시 playlist A 사용, 둘 다 실패 시 업로드 스킵
+  - Phase E-1~E-7: 핵심 7개 모듈 logging 전환 (thumbnail_service, seo_scraper, prompt_builder, sheets_logger, beat_video, suno_bot, master_pipeline) — import logging + logger = logging.getLogger(__name__), print → logger.info/warning/error 의도별 분류, CLI 출력은 print 유지, master_pipeline 93→127 logger 확대
+  - Phase E-8: schedule 자동 백업 시스템 (ea8fe01) — step3 json.dump 직전 schedule_backups/ 폴더로 자동 복사, 파일명 upload_schedule_{channel_key}_{YYYYMMDD_HHMMSS}.bak.json, 30일 이상 자동 삭제, 백업 실패 시 파이프라인 계속
+  - Phase E-9: 코드리뷰 반영 exc_info=True 9곳 추가 (6c09c3f) — master_pipeline 8곳 + seo_scraper 1곳, AST 전수 검증 except 블록 내 exc_info 100% 커버리지
+  - 12커밋 분리 (f07aa2f, f75a7d2, a2e23d9, f403249, 61351dd, 5d66de0, e886a58, 08dfbe3, ca33bae, 7793e93, ea8fe01, 6c09c3f)
+- **해소된 이슈**
+  - AB 테스터 5쌍 동일 제목 영상: Sheets 행 삭제 + YouTube 비공개 삭제, 정상 등록
+  - 2xD9gTGN4GU video_type 오분류: 실제 2곡 합본 playlist (버그 아님 확정)
+  - Phase A/B schedule 덮어쓰기: Phase E-8 백업 시스템으로 해결
+- **백로그 (다음 세션 작업 후보)**
+  - pyflakes 미사용 import 정리 5파일 (master_pipeline/prompt_builder/sheets_logger/seo_scraper/beat_video)
+  - scripts/test_shorts_916_live.py logging.xxx 28건 → named logger 통일 (LOW)
+  - 로그 파일명 통일: master_pipeline vs suno_bot 패턴 불일치 (LOW)
+  - _dry_run_titles 단독 호출 시 basicConfig 미설정 → logger 출력 부재 (MEDIUM)
+  - W1 upload_schedule.json dead write → 제거 또는 _debug_dump.json 리네임 (LOW)
+  - prompt_builder fallback 가시성, Leonardo 잔액 모니터링, verify_upload.py 독립 검증 스크립트
 
 ### 2026-04-15
 - **History 탭 트랙 단위 로깅 구조 전면 개편 (Phase 4-history)**
