@@ -823,3 +823,21 @@ Phase 6 수정 예정:
 - **해결**: 4c27d8b — (1) thumbnail_adapter._variants_dict()에 A_raw/B_raw/C_raw 키 추가 (2) generate_crow_thumbnail() 반환 4-tuple 확장 (3) master_pipeline playlist/single/shorts 3블록 bg_image raw→final→banner fallback 체인 (4) raw 미존재 시 logger.warning (5) Shorts raw_bg 경로 추측 로직 폐기
 - **파일**: `thumbnail_adapter.py`, `thumbnail_builder.py`, `master_pipeline.py`
 - **체크리스트**: "영상 배경 텍스트 없음" 검증은 drawtext grep으로 부족, bg_image 소스 역추적 필요. 파일 경로를 호출부에서 추측하는 방식 금지 (단일 소스 원칙 위반)
+
+### [E064] YACHA Shorts A 썸네일 16:9 저장 버그 (2026-04-16)
+태그: #썸네일 #shorts #해상도 #레거시경로
+- **발견**: 2026-04-16 Shorts A 최종본(A_XXX.jpg) 1344×768(16:9). raw(A_XXX_raw.jpg)는 정상이었으나 확인 결과 raw도 16:9 (Leonardo I2I 기본값)
+- **증상**: Shorts A 썸네일이 16:9로 저장되어 YouTube 피드에서 좁게 표시. B/C는 thumbnail_service.py RESOLUTIONS[video_type] 사용으로 정상 9:16
+- **원인**: yacha_thumbnail_variants.py가 A variant 전용 레거시 경로. WIDTH=1344, HEIGHT=768 상수 하드코딩. _leonardo_i2i() 기본값 width=1344, height=768. generate_variant()가 video_type 파라미터를 받지만 내부에서 해상도 결정에 미사용
+- **해결**: b64ec60 — RESOLUTIONS dict 추가 (playlist/single=1344×768, shorts=768×1344). composite_thumbnail에 video_type 파라미터 추가. _leonardo_i2i 호출 시 leo_w/leo_h 명시 전달. yacha_c resize도 video_type 반영
+- **파일**: `yacha_thumbnail_variants.py`
+- **체크리스트**: 하드코딩된 해상도 상수는 video_type 분기가 필요한 모듈의 사일런트 버그 원인. B/C와 A가 다른 모듈을 타는 경우 해상도 처리 방식 대조 필수
+
+### [E065] 오디오 저장 경로 이원화 문제 (2026-04-16)
+태그: #디렉토리구조 #오디오경로 #pick_best_versions
+- **발견**: 2026-04-16 폴더 구조 조사 — Suno 다운로드는 YACHA/audio/{날짜}_1/에, 선별 후 wav는 YACHA/{날짜}/에, 미선별은 YACHA/{날짜}_미선택/에 분산 저장. failed_tracks.txt만 audio/ 하위에 남음
+- **증상**: audio/ 폴더 안에 failed_tracks.txt만 있고 wav가 없어 보이는 착시. 실제 wav는 channel_dir 최상위 날짜 폴더에 산재
+- **원인**: master_pipeline.py pick_best_versions()가 sel_dir/unsel_dir을 channel_dir(=YACHA) 기준으로 생성. base_dir(=YACHA/audio)와 불일치
+- **해결**: 0f9d769 — sel_dir/unsel_dir 경로에 "audio" 세그먼트 추가 (L244, L261). 기존 16폴더 419파일 14.7GB shutil.move로 audio/ 하위 통합 이동 (파일 무결성 100%)
+- **파일**: `master_pipeline.py` (2줄 변경)
+- **체크리스트**: ch_dir/base_dir처럼 의미 구분된 경로 상수가 실제 디렉토리 구조와 일치하는지 정기 확인. 경로 분기점은 pick_best_versions 같은 중간 함수에 숨어있을 수 있음

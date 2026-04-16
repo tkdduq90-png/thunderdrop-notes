@@ -17,21 +17,33 @@
   - AB 테스터 5쌍 동일 제목 영상: Sheets 행 삭제 + YouTube 비공개 삭제, 정상 등록
   - 2xD9gTGN4GU video_type 오분류: 실제 2곡 합본 playlist (버그 아님 확정)
   - Phase A/B schedule 덮어쓰기: Phase E-8 백업 시스템으로 해결
-- **E062 studio_ab_tester regenerate YACHA 경로 수정 (d836456, 미푸시)**
+- **E062 studio_ab_tester regenerate YACHA 경로 수정 (d836456, 푸시 완료)**
   - 레거시 generate_thumbnail_variants() → build_and_adapt_yacha() 전환
-  - 진단: docs/phase5_diagnosis.md studio_ab_tester 섹션
   - 3CROW/focusarchitect 기존 경로 유지
-- **E063 영상 bg_image raw 전환 5개 경로 (4c27d8b, 미푸시)**
+- **E063 영상 bg_image raw 전환 5개 경로 (4c27d8b, 푸시 완료)**
   - thumbnail_adapter._variants_dict() A_raw/B_raw/C_raw 키 추가
   - generate_crow_thumbnail() 반환 3→4 tuple 확장 (raw_path)
   - master_pipeline playlist/single/shorts 3블록 raw→final→banner fallback
-  - Shorts raw_bg 경로 추측 로직 폐기 (3중 불일치 해소)
-  - 감사: docs/video_text_audit_2026-04-16.md (1차 drawtext + 2차 bg_image 재감사)
-  - focusarchitect: 텍스트 오버레이 없음 확인 → 범위 제외
+- **E064 YACHA Shorts A 썸네일 16:9 → 9:16 비율 수정 (b64ec60)**
+  - yacha_thumbnail_variants.py RESOLUTIONS dict 추가, composite_thumbnail video_type 분기
+  - B/C는 thumbnail_service.py RESOLUTIONS 사용으로 정상이었으나 A만 레거시 하드코딩
+- **E065 오디오 저장 경로 audio/ 하위 통합 (0f9d769)**
+  - pick_best_versions sel_dir/unsel_dir에 "audio" 세그먼트 추가 (2줄)
+  - 기존 16폴더 419파일 14.7GB audio/ 하위로 이동 완료
+  - 새 구조:
+    ```
+    YACHA/audio/
+    ├── {날짜}_1/        (Suno raw + failed_tracks)
+    ├── {날짜}/           (선별 wav)
+    └── {날짜}_미선택/    (미선별 wav 아카이브)
+    ```
 - **📍 다음 세션 우선순위**
-  - 1순위: 풀파이프 자연 검증 결과 확인 (4c27d8b) — 영상 배경 텍스트 없음 + raw bg 경고 없음 → 미푸시 2건 푸시
-  - 2순위: studio_ab_tester regenerate 수동 검증 (d836456) — YACHA 1건 수동 실행
+  - 1순위: YACHA C 썸네일 흰 테두리/이중 이미지 조사 (파일 경로/픽셀 분석/생성 로직 추적)
+  - 2순위: studio_ab_tester regenerate 수동 검증 (YACHA 1건)
   - 3순위: Phase 3 3CROW/FocusArchitect thumbnail_service 이전
+- **학습/원칙 추가**
+  - 하드코딩된 해상도 상수는 video_type 분기가 필요한 모듈의 사일런트 버그 원인이 될 수 있음
+  - ch_dir/base_dir처럼 의미 구분된 경로 상수가 실제 디렉토리 구조와 일치하지 않으면 운영 혼동 유발
 - **백로그 (다음 세션 작업 후보)**
   - pyflakes 미사용 import 정리 5파일 (master_pipeline/prompt_builder/sheets_logger/seo_scraper/beat_video)
   - scripts/test_shorts_916_live.py logging.xxx 28건 → named logger 통일 (LOW)
