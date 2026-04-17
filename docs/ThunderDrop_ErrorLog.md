@@ -309,6 +309,10 @@
 5. **동일 pickle 파일 두 채널 공유** → 채널별 독립 토큰 필수
 6. **FFmpeg 필터 체인 재사용 시 입력 크기 변경 주의** → crop_prefix 같은 전처리 필터가 16:9 전제로 설계됐는데 9:16 입력을 받으면 의도치 않은 대규모 crop 발생. 입력 해상도 변경 시 모든 필터 체인 재검토 필수.
 7. **YouTube API 200 OK ≠ 실제 반영** → thumbnails.set() Shorts, videos.insert 중복 콘텐츠 모두 200 OK 반환하면서 서버에서 무음 거부. 반드시 후속 videos.list() 또는 snippet.thumbnails 조회로 실제 반영 검증 필수.
+8. **day_idx 같은 로테이션 인덱스에 folder_idx/루프 변수 할당** → 고정 선택 증상 유발. 로테이션용 인덱스는 날짜 기반 또는 누적 카운터로 독립 계산. (E067)
+9. **Popen 백그라운드 자식 프로세스에 input() 호출** → 무한 대기. 백그라운드 실행 경로는 stdin 없는 조건에서 동작하도록 --no-interactive 플래그 분리. (E069)
+10. **캐시 키 생성 시 구분 파라미터 누락** → type=B/C 같은 변종이 동일 캐시 공유해서 한쪽이 소진되면 다른쪽도 빈 결과. 키 생성 함수 시그니처에 모든 구분자 포함 + 해시 구분자는 입력에 나올 수 없는 문자. (E068)
+11. **템플릿 마커 삽입 후 치환 로직 누락** → 업로드된 결과물에 {{XXX}} 날것 노출. 마커는 반드시 치환 시점 명시 + 실패 fallback 지정. (E070)
 
 ---
 
@@ -841,3 +845,82 @@ Phase 6 수정 예정:
 - **해결**: 0f9d769 — sel_dir/unsel_dir 경로에 "audio" 세그먼트 추가 (L244, L261). 기존 16폴더 419파일 14.7GB shutil.move로 audio/ 하위 통합 이동 (파일 무결성 100%)
 - **파일**: `master_pipeline.py` (2줄 변경)
 - **체크리스트**: ch_dir/base_dir처럼 의미 구분된 경로 상수가 실제 디렉토리 구조와 일치하는지 정기 확인. 경로 분기점은 pick_best_versions 같은 중간 함수에 숨어있을 수 있음
+
+### [E066] Shorts raw_bg 하드코딩 A_raw (2026-04-17)
+태그: #shorts #raw_bg #variant
+재발: 0회
+커밋: 9b64f00
+
+근본원인: thumb_variants.get("A_raw", "") 하드코딩으로 variant_key(A/B/C) 무시.
+Short B/C 비디오 배경이 A variant의 raw 이미지를 사용. 동일 init 2중 사용 증상.
+
+체크리스트:
+- variant_key 파라미터가 해당 스코프에서 정의됐는지
+- thumb_variants dict에 {variant}_raw 키가 A/B/C 모두 존재하는지
+- raw_bg 선택 시 동일 패턴이 플리/단곡에도 있는지 (구조 차이 확인)
+
+해결: `thumb_variants.get(f"{variant_key}_raw", "")` 로 variant별 선택
+
+### [E067] day_idx 로테이션 고장 (고정 선택 증상) (2026-04-17)
+태그: #thumbnail #rotation #day_idx
+재발: 0회
+커밋: 11af853
+
+근본원인: master_pipeline.py day_idx = folder_idx 할당.
+1폴더(days=1) 실행 시 folder_idx=0 고정 → COMBO[0] 항상 선택 → rear 포즈만 생성.
+로테이션 로직(COMBO[day_idx % 9])은 정상이었으나 입력 day_idx가 날짜 비연동.
+
+체크리스트:
+- day_idx 값이 run마다 달라지는가 (dry-run 출력)
+- % 로테이션 결과 값 분포 확인
+- day_idx가 날짜 식별자 vs 순수 로테이션 인덱스 중 어느 용도인지 grep으로 확인
+- 다른 호출부에서 day_idx를 file naming 등에 쓰고 있으면 날짜 기반으로 바꿀 때 충돌 가능
+
+해결: `_day_idx = (datetime.today() - datetime(2026, 1, 1)).days`
+날짜 기반 누적 인덱스로 매일 다른 포즈 자동 선택.
+
+### [E068] Hook 캐시 title_type 무시 (2026-04-17)
+태그: #seo #cache #title_type
+재발: 0회
+커밋: ae14afb, e2ce3e9
+
+근본원인: _cache_path(query)가 title_type 무시. Type=B와 Type=C가 동일 캐시 공유.
+Type=B 호출이 used_titles 소진 → Type=C는 0개 반환.
+
+체크리스트:
+- 캐시 키 생성 시 모든 구분 파라미터가 입력에 포함됐는지
+- 해시 구분자는 입력 문자열에 절대 나올 수 없는 문자로
+- 기존 캐시 자동 무효화 리스크 검토
+
+해결: _cache_path(query, title_type) 시그니처 확장 + "|" 구분자 사용
+
+### [E069] AB 테스터 백그라운드 stdin 블로킹 (2026-04-17)
+태그: #ab-tester #stdin #popen
+재발: 0회
+커밋: 7e22e3d
+
+근본원인: _check_chrome_running()의 input()이 Step G Popen 자식 프로세스에서 무한 대기.
+백그라운드 프로세스는 stdin 없음 → input() 영구 블로킹.
+
+체크리스트:
+- 백그라운드 실행 파일에 input() 잔존 여부
+- --no-interactive / --headless 같은 플래그로 우회 경로 제공
+- Chrome 프로필 충돌 시 실패 경로 (강제 종료 vs 에러 후 exit)
+
+해결: --no-interactive 플래그 추가, Step G Popen에서 전달
+
+### [E070] description 템플릿 {{PLAYLIST_LINK}} 미치환 (2026-04-17)
+태그: #seo #template #playlist_link
+재발: 0회
+커밋: c282fd7
+
+근본원인: Single 영상 description에 {{PLAYLIST_LINK}} 템플릿 마커 삽입만 하고 치환 로직 없음.
+플리 업로드 완료 시점에서야 video_id 확정됨 → 단곡 업로드 직전 치환 필요.
+
+체크리스트:
+- 모든 템플릿 마커 ({{XXX}}) 치환 시점 명시
+- 치환 실패 시 fallback (마커 제거 vs 원본 유지)
+- 치환 후 grep으로 마커 잔존 확인
+
+해결: 단곡 업로드 직전 replace("{{PLAYLIST_LINK}}", f"https://youtu.be/{playlist_video_id}")
+

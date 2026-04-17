@@ -1,8 +1,38 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-16*
+*최종 업데이트: 2026-04-17*
 
 ## 📍 최근 세션
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
+
+### 2026-04-17
+- **파이프라인 run 후 이슈 6건 진단 → 수정 15건 커밋 완료**
+  - Thumnail C2→C 파일명 수정, villain arc(YACHA+3CROW) 제거, Popen 로그 리다이렉트
+  - raw_bg variant별 선택(E066), Shorts min(3) 강제, VILLAIN ARC MOOD 제거
+  - rear 포즈 제거 + day_idx 날짜 기반 로테이션(E067)
+  - AB 테스터 --no-interactive 플래그(E069), PLAYLIST_LINK 치환(E070)
+  - single 썸네일 track_title 표시(T-4), Hook 캐시 title_type 분리(E068)
+  - Claude Code 알림 hooks, VARIANTS["rear"] 데드코드 제거(00c06e3), 해시 구분자 "|"(e2ce3e9)
+- **진단 문서 6건 생성**
+  - diagnosis_20260417.md / _part2.md / _part3.md / followup_20260417.md / code_review_20260417.md / _part2.md
+- **코드리뷰 3회 실시**
+  - 1차: 7건(92828b5까지) — OK
+  - 2차: 5건(T-1~T-5, ae14afb까지) — NOT OK (Issue 1/2)
+  - 3차: 2건(Issue 수정 후, e2ce3e9까지) — OK
+- **신규 에러 E066~E070 기록, 실수 패턴 8~11번 추가**
+- **📍 다음 세션 우선순위**
+  - 1순위: 파이프라인 run 실측 검증 (수정 15건 효과 확인)
+    * Shorts A/B/C 각자 다른 init 생성 확인
+    * 영상 내부 텍스트 없음 (raw_bg 사용 확인)
+    * A variant 포즈가 closeup/front 로테이션 (rear 미출현)
+    * AB 테스트 자동 실행 (10분 후) → ab_bg_yacha.log 기록 확인
+    * 단곡 썸네일 line1이 곡명
+    * 단곡 description에 플리 URL 삽입 확인
+    * Hook 제목 B/C 각자 생성 (0개 반복 없음)
+    * villain 키워드 노출 0건
+  - 2순위: C 썸네일 원본 교체 (보류 중) — Thumnail C.png 테두리 포함, 마스터 오 이미지 작업 필요
+  - 3순위: base_rear.jpg 에셋 삭제 여부 결정 (dead asset)
+- **피드백 루프 업데이트**
+  - AB 테스터 자동 실행 수정(E069) → STEP 1 상태 ⚠️ → 조건부 ✅ (다음 run 검증 후 확정)
 
 ### 2026-04-16
 - **Phase E 로깅 인프라 + schedule 백업 시스템 완성**
@@ -37,10 +67,6 @@
     ├── {날짜}/           (선별 wav)
     └── {날짜}_미선택/    (미선별 wav 아카이브)
     ```
-- **📍 다음 세션 우선순위**
-  - 1순위: YACHA C 썸네일 흰 테두리/이중 이미지 조사 (파일 경로/픽셀 분석/생성 로직 추적)
-  - 2순위: studio_ab_tester regenerate 수동 검증 (YACHA 1건)
-  - 3순위: Phase 3 3CROW/FocusArchitect thumbnail_service 이전
 - **학습/원칙 추가**
   - 하드코딩된 해상도 상수는 video_type 분기가 필요한 모듈의 사일런트 버그 원인이 될 수 있음
   - ch_dir/base_dir처럼 의미 구분된 경로 상수가 실제 디렉토리 구조와 일치하지 않으면 운영 혼동 유발
