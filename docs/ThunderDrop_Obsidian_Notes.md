@@ -1,8 +1,30 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-17*
+*최종 업데이트: 2026-04-18*
 
 ## 📍 최근 세션
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
+
+### 2026-04-18
+- **Gym Music 본채널 설계 리서치 — 신규 3번째 채널 방향 확정**
+  - YACHA D방향(Drift/Aggressive Phonk) 폐기, 옵션4(Gym Music 일반) 확정
+  - YACHA/3CROW = 테스트 채널 격하, 신규 채널 = Gym Music 본채널
+  - 한국 시장 부적합 확인(전문 채널 부재) → 글로벌 단일 진입 확정, 10만급 큐레이션 목표
+- **3단계 시장 리서치 스크립트 실행**
+  - v1(gym_music_research.py): 14채널/67영상, 트랙리스트 추출 97% 실패
+  - v2(gym_music_analysis_v2.py): 7월2025 시장 변곡점 발견 (Phonk/Bass House/Trap 부상)
+  - v3(gym_music_research_v3.py): 글로벌+한국+일본 3시장 분리, regionCode 강제, 91채널 통과, 글로벌 10만+ 채널 18개 식별
+- **글로벌 7채널 심층 분석 (gym_channels_deep_analysis.py)**
+  - CURSEDEVIL(55.6만): 시리즈IP(ADRENALINE/AURA), 영상당 100만~1270만, 월1회 이하 퀄리티형
+  - TRAP WORKOUT MUSIC(53.4만): 죽은 채널, 카탈로그 효과만 (2018년 이후 미활성)
+  - Thug Radio(55.9만): 2Pac Hip Hop 집중 616K평균, 12분 단위 영상
+  - DJ Naydee(40.5만): Latin/Reggaeton 특화, Workout 키워드 사용이나 실체는 파티 믹스
+  - Hard EDM Workout/TheGymBeatsOfficial: 표준화 공식 + 자체음원(Suno유사) 검증
+- **핵심 원칙 도출**: 목적분류≠시청자분류 (마스터오 통찰), 자체음원(Suno) 가능 검증됨
+- **잠정 설계 모델**: CURSEDEVIL 시리즈IP + Hard EDM Workout 표준화 하이브리드 → "BEAST MODE Vol.1 - Push Day Music (130 BPM, 60min)"
+- **미해결 (다음 세션)**
+  - 글로벌 10만+ 채널 14개 추가 분석 필요
+  - 100만+ 큐레이션 공식 (Revive 122만, DJ Noize 125만, Epidemic Pop 106만)
+  - 신규 채널 설계 1차안 (제목/썸네일/Suno 프롬프트)
 
 ### 2026-04-17
 - **파이프라인 run 후 이슈 6건 진단 → 수정 15건 커밋 완료**
