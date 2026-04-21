@@ -1,8 +1,46 @@
 # ThunderDrop Master Knowledge Base
-*최종 업데이트: 2026-04-18*
+*최종 업데이트: 2026-04-20*
 
 ## 📍 최근 세션
 *최신 순서, 최대 10개까지 유지. 오래된 엔트리는 자동 삭제.*
+
+### 2026-04-20 — POMADE 플리 #1 9곡 역공학 완료 (Tom Hardy 10곡 SaaS 준비)
+
+#### 완료
+- POMADE 조회수 1위 플레이리스트 9곡 Suno 1-2-3차 검증 완료
+- 2-of-3 다수결로 9개 공식 확정 (BPM/Key/장르)
+- Notion 1장 통합 구조: https://www.notion.so/3489b7a1c23f81b694f5d9a49b86d225
+- 9곡 전체 Suno Full Style + 풀 가사 저장 완료
+
+#### 9개 확정 공식 (Tom Hardy 10곡 매핑 템플릿)
+| # | 곡 | BPM | Key | 장르 |
+|---|---|---:|-----|-----|
+| 1 | NO MERCY IN MY WAKE | 150 | D minor | Hard rock + industrial + electronic |
+| 2 | UNCHAIN THE THUNDER | 150 | D minor | Hard rock + heavy blues |
+| 3 | BORN FOR THE IMPACT | 85 | B minor | Cinematic hard rock + industrial |
+| 4 | RISE FROM THE FIRELINE | 160 | B minor | Modern hard rock + cinematic orchestral |
+| 5 | ASHES DON'T HOLD ME | 160 | D minor | Nu-metal + rap rock fusion |
+| 6 | STAND IN THE FLAMES | 150 | E minor | Modern hard rock + cinematic |
+| 7 | ENTER THE STORM | 85 | D minor | Modern hard rock + alt metal |
+| 8 | WHEN THE GROUND SHAKES | 150 | B minor | Nu-metal + rap rock |
+| 9 | BREAK THE HORIZON | 150 | B minor | Cinematic arena rock |
+
+#### 플리 전체 분포
+- BPM: 150 BPM = 5곡 / 160 BPM = 2곡 / 85 BPM = 2곡
+- Key: D minor = 4곡 / B minor = 4곡 / E minor = 1곡 (모두 minor)
+- 공통 DNA: Distorted electric guitar + Gritty 남성 보컬 + Compressed 헤비 드럼 + 4/4 time
+
+#### 다음 작업 우선순위
+1. Tom Hardy Track 1 "Bronson's Cell" 실제 Suno 생성 테스트
+2. Tom Hardy 10곡 트랙리스트를 9개 확정 공식에 매핑 재설계
+3. 나머지 9곡 가사 작성 + Suno 생성
+4. 신규 3번째 채널명 + 시각 IP + Gmail 생성
+5. thumbnail_service 신규 채널 적용
+
+#### 핵심 교훈
+- N=2 샘플로 전략 결론 금지: 2차만 보고 "도박 곡" 판정한 것이 오류, 3차로 2차가 이상치 판명
+- Suno 분석은 대부분 안정적, 최소 2회 일치 확인이 신뢰 기준
+- 마스터 오 지시 위반 3회 발생: 섹션 분리 난립, 서브페이지 무분별 생성, transcript 파싱 오류 (E040)
 
 ### 2026-04-18
 - **Gym Music 본채널 설계 리서치 — 신규 3번째 채널 방향 확정**
